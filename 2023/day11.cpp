@@ -13,7 +13,7 @@
 #define CL_HPP_ENABLE_EXCEPTIONS
 #include <CL/opencl.hpp>
 
-constexpr int kGPUBetterThreshold = 1300;
+constexpr int kGPUBetterThreshold = 1300000;
 
 constexpr uint_fast32_t kIterations = 1;
 
