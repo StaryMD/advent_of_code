@@ -19,8 +19,7 @@ with open("data/2.txt") as f:
                 del copy[nr_to_remove]
 
             for i in range(1, len(copy)):
-                diff = copy[i] - copy[i - 1]
-                abs_diff = abs(diff)
+                abs_diff = abs(copy[i] - copy[i - 1])
 
                 if abs_diff < 1 or abs_diff > 3:
                     good = False
