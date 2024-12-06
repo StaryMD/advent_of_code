@@ -1,10 +1,40 @@
+#include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
+#include <ios>
 #include <iostream>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "utils.hpp"
+
+struct Board {
+  Board(const std::vector<std::string> &lines) {
+    map.resize(lines.size() * lines[0].size());
+
+    map_y = lines.size();
+    map_x = lines[0].size();
+
+    for (int i = 0; i < lines.size(); ++i) {
+      std::copy(lines[i].data(), lines[i].data() + map_x, map.data() + i * map_x);
+    }
+  }
+
+  char at(const int y, const int x) const {
+    return map[y * map_x + x];
+  }
+
+  void set(const int y, const int x, const char c) {
+    map[y * map_x + x] = c;
+  }
+
+  std::vector<char> map;
+  int map_y;
+  int map_x;
+};
 
 const std::vector<std::pair<int, int>> dirs = {
     {-1, 0},
@@ -13,21 +43,21 @@ const std::vector<std::pair<int, int>> dirs = {
     {0, -1},
 };
 
-bool CheckIfInLoop(const std::vector<std::string> &lines, int y, int x) {
-  bool in_loop = false;
+bool CheckIfInLoop(const Board &board, int y, int x) {
   int dir = 0;
 
-  std::set<std::tuple<int, int, int>> set;
+  std::vector<uint8_t> visit(board.map_x * board.map_y);
 
-  while (!in_loop && y > 0 && y < lines.size() - 1 && x > 0 && x < lines[0].size() - 1) {
+  while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
     const int new_y = y + dirs[dir].first;
     const int new_x = x + dirs[dir].second;
 
-    if (lines[new_y][new_x] == '#') {
-      if (set.find({dir, y, x}) != set.end()) {
-        in_loop = true;
+    if (board.at(new_y, new_x) == '#') {
+      if (visit[y * board.map_x + x] & (1 << dir)) {
+        return true;
       }
-      set.insert({dir, y, x});
+
+      visit[y * board.map_x + x] |= 1 << dir;
       dir = (dir + 1) % 4;
     } else {
       y = new_y;
@@ -35,7 +65,7 @@ bool CheckIfInLoop(const std::vector<std::string> &lines, int y, int x) {
     }
   }
 
-  return in_loop;
+  return false;
 }
 
 int main() {
@@ -47,11 +77,15 @@ int main() {
     lines.push_back(line);
   }
 
+  my::Timer timer;
+
+  Board board(lines);
+
   int start_y = 0;
   int start_x = 0;
 
-  for (int y = 0; y < lines.size(); ++y) {
-    for (int x = 0; x < lines[y].size(); ++x) {
+  for (int y = 0; y < board.map_y; ++y) {
+    for (int x = 0; x < board.map_x; ++x) {
       if (lines[y][x] == '^') {
         start_y = y;
         start_x = x;
@@ -60,23 +94,36 @@ int main() {
     }
   }
 
+  int y = start_y;
+  int x = start_x;
+
   int points = 0;
+  int dir = 0;
 
-  for (int y = 0; y < lines.size(); ++y) {
-    for (int x = 0; x < lines[0].size(); ++x) {
-      if (lines[y][x] == '.') {
-        lines[y][x] = '#';
+  while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
+    const int new_y = y + dirs[dir].first;
+    const int new_x = x + dirs[dir].second;
 
-        if (CheckIfInLoop(lines, start_y, start_x)) {
-          points++;
-        }
+    if (board.at(new_y, new_x) == '#') {
+      dir = (dir + 1) % 4;
+    } else {
+      y = new_y;
+      x = new_x;
 
-        lines[y][x] = '.';
+      if (board.at(y, x) != ',') {
+        board.set(y, x, '#');
+
+        points += CheckIfInLoop(board, start_y, start_x);
+
+        board.set(y, x, ',');
       }
     }
   }
 
+  const double elapsed_time = timer.ElapsedTime();
+
   std::cout << points << '\n';
+  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
 
   return 0;
 }
