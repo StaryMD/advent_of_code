@@ -1,11 +1,8 @@
 from aocd import data, submit
-import json
 
 
-def GetAns(text):
-    br = 0
-    while text[br] != "":
-        br += 1
+def GetAns(text: list):
+    br = text.index("")
 
     map = {}
 
@@ -17,7 +14,6 @@ def GetAns(text):
         else:
             map[a].append(b)
 
-    print(json.dumps(map))
     points = 0
 
     for line in text[br + 1 :]:
@@ -30,7 +26,6 @@ def GetAns(text):
                     good = False
 
         if not good:
-            print(nums)
             for i, num in enumerate(nums):
                 for j, num2 in enumerate(nums[i + 1 :]):
                     if num2 in map and num in map[num2]:
@@ -80,4 +75,4 @@ if test_points != 123:
 points = GetAns(data.split("\n"))
 print(points)
 
-submit(points)
+# submit(points)

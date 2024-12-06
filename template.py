@@ -6,7 +6,6 @@ def GetAns(text):
 
 
 test_input = [
-    "",
 ]
 
 test_points = GetAns(test_input)
