@@ -46,18 +46,18 @@ const std::vector<std::pair<int, int>> dirs = {
 bool CheckIfInLoop(const Board &board, int y, int x) {
   int dir = 0;
 
-  std::vector<uint8_t> visit(board.map_x * board.map_y);
+  std::vector<bool> visit(board.map_x * board.map_y * 4);
 
   while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
     const int new_y = y + dirs[dir].first;
     const int new_x = x + dirs[dir].second;
 
     if (board.at(new_y, new_x) == '#') {
-      if (visit[y * board.map_x + x] & (1 << dir)) {
+      if (visit[(y * board.map_x + x) * 4 + dir]) {
         return true;
       }
 
-      visit[y * board.map_x + x] |= 1 << dir;
+      visit[(y * board.map_x + x) * 4 + dir] = true;
       dir = (dir + 1) % 4;
     } else {
       y = new_y;
@@ -86,13 +86,14 @@ int main() {
 
   for (int y = 0; y < board.map_y; ++y) {
     for (int x = 0; x < board.map_x; ++x) {
-      if (lines[y][x] == '^') {
+      if (board.at(y, x) == '^') {
         start_y = y;
         start_x = x;
-        break;
+        goto L_STOP;
       }
     }
   }
+L_STOP:
 
   int y = start_y;
   int x = start_x;
