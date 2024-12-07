@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
-#include <format>
 #include <fstream>
 #include <iomanip>
 #include <ios>
@@ -14,22 +13,30 @@
 
 #include "utils.hpp"
 
-const std::vector<std::pair<int, int>> dirs = {
-    {-1, 0},
-    {0, 1},
-    {1, 0},
-    {0, -1},
+const std::array<std::pair<int, int>, 4> dirs = {
+    std::pair{-1, 0},
+    std::pair{0, 1},
+    std::pair{1, 0},
+    std::pair{0, -1},
 };
 
 struct Board {
   Board(const std::vector<std::string> &lines) {
-    map.resize(lines.size() * lines[0].size());
-
     map_y = lines.size();
     map_x = lines[0].size();
 
+    map.resize(map_y * map_x);
+
     for (size_t i = 0; i < lines.size(); ++i) {
       std::copy(lines[i].data(), lines[i].data() + map_x, map.data() + i * map_x);
+    }
+
+    map_transposed.resize(map_y * map_x);
+
+    for (int y = 0; y < map_y; ++y) {
+      for (int x = 0; x < map_x; ++x) {
+        map_transposed[x * map_x + y] = map[y * map_y + x];
+      }
     }
   }
 
@@ -41,19 +48,8 @@ struct Board {
     map[y * map_x + x] = c;
   }
 
-  friend std::ostream &operator<<(std::ostream &out, const Board &board) {
-    for (int y = 0; y < board.map_y; ++y) {
-      for (int x = 0; x < board.map_x; ++x) {
-        const int index = y * board.map_x + x;
-        out << board.map[index];
-      }
-      out << '\n';
-    }
-
-    return out;
-  }
-
   std::vector<char> map;
+  std::vector<char> map_transposed;
   int map_y;
   int map_x;
 };
@@ -71,101 +67,86 @@ struct StopsMap {
     }
   }
 
-  void AddObstacle(const int start_y, const int start_x) {
-    for (int dir0 = 0; dir0 < static_cast<int>(dirs.size()); ++dir0) {
-      const int curr_start_y = start_y + dirs[dir0].first;
-      const int curr_start_x = start_x + dirs[dir0].second;
-      const int dir = (dir0 + 3) % 4;
+  void AddObstacle(const int obs_y, const int obs_x) {
+#define STUFF(forward)                                                                        \
+  {                                                                                           \
+    const int curr_start_y = obs_y + dirs[(forward)].first;                                   \
+    const int curr_start_x = obs_x + dirs[(forward)].second;                                  \
+                                                                                              \
+    const int back = ((forward) + 2) % 4;                                                     \
+    const int left = ((forward) + 3) % 4;                                                     \
+    const int redirect_index = (curr_start_y * board.map_x + curr_start_x) * 4 + back;        \
+                                                                                              \
+    int y = curr_start_y;                                                                     \
+    int x = curr_start_x;                                                                     \
+                                                                                              \
+    while (y >= 0 && y < board.map_y && x >= 0 && x < board.map_x && board.at(y, x) != '#') { \
+      y += dirs[left].first;                                                                  \
+      x += dirs[left].second;                                                                 \
+    }                                                                                         \
+                                                                                              \
+    if (y >= 0 && y < board.map_y && x >= 0 && x < board.map_x && board.at(y, x) == '#') {    \
+      const int prev_y = y - dirs[left].first;                                                \
+      const int prev_x = x - dirs[left].second;                                               \
+                                                                                              \
+      past.push_back({redirect_index, stops_map[redirect_index]});                            \
+                                                                                              \
+      stops_map[redirect_index] = (prev_y * board.map_x + prev_x) * 4 + left;                 \
+    }                                                                                         \
+  }
+    STUFF(0)
+    STUFF(1)
+    STUFF(2)
+    STUFF(3)
 
-      int y = curr_start_y;
-      int x = curr_start_x;
-
-      while (y >= 0 && y < board.map_y && x >= 0 && x < board.map_x && board.at(y, x) != '#') {
-        y += dirs[dir].first;
-        x += dirs[dir].second;
-      }
-
-      if (y >= 0 && y < board.map_y && x >= 0 && x < board.map_x && board.at(y, x) == '#') {
-        const int prev_y = y - dirs[dir].first;
-        const int prev_x = x - dirs[dir].second;
-        const int funny_id = (curr_start_y * board.map_x + curr_start_x) * 4 + (dir0 + 2) % 4;
-
-        past.push_back({funny_id, stops_map[funny_id]});
-
-        stops_map[(curr_start_y * board.map_x + curr_start_x) * 4 + (dir0 + 2) % 4] =
-            (prev_y * board.map_x + prev_x) * 4 + dir;
-      }
-    }
+#undef STUFF
   }
 
   void CorrectPathsAroundObstacle(const int obs_y, const int obs_x) {
-    for (int dir = 0; dir < static_cast<int>(dirs.size()); ++dir) {
-      const int curr_start_y = obs_y + dirs[dir].first;
-      const int curr_start_x = obs_x + dirs[dir].second;
-      const int towards_obs = (dir + 2) % 4;
-      const int redirect_index = (curr_start_y * board.map_x + curr_start_x) * 4 + towards_obs;
-      const std::pair<int, int> right_dir = dirs[(dir + 1) % 4];
-
-      int y = curr_start_y;
-      int x = curr_start_x;
-
-      int cand_y = curr_start_y + right_dir.first;
-      int cand_x = curr_start_x + right_dir.second;
-
-      while (cand_y >= 0 && cand_y < board.map_y && cand_x >= 0 && cand_x < board.map_x &&
-             board.at(y, x) != '#') {
-        if (board.at(cand_y, cand_x) == '#') {
-          const int stop_index = (y * board.map_x + x) * 4 + (dir + 1) % 4;
-
-          past.push_back({stop_index, stops_map[stop_index]});
-
-          stops_map[stop_index] = redirect_index;
-        }
-
-        y += dirs[dir].first;
-        x += dirs[dir].second;
-
-        cand_y += dirs[dir].first;
-        cand_x += dirs[dir].second;
-      }
-    }
+#define STUFF(forward)                                                                   \
+  {                                                                                      \
+    const int curr_start_y = obs_y + dirs[(forward)].first;                              \
+    const int curr_start_x = obs_x + dirs[(forward)].second;                             \
+                                                                                         \
+    const int right = ((forward) + 1) % 4;                                               \
+    const int back = ((forward) + 2) % 4;                                                \
+    const int redirect_index = (curr_start_y * board.map_x + curr_start_x) * 4 + back;   \
+                                                                                         \
+    int y = curr_start_y;                                                                \
+    int x = curr_start_x;                                                                \
+                                                                                         \
+    int cand_y = curr_start_y + dirs[right].first;                                       \
+    int cand_x = curr_start_x + dirs[right].second;                                      \
+                                                                                         \
+    while (cand_y >= 0 && cand_y < board.map_y && cand_x >= 0 && cand_x < board.map_x && \
+           board.at(y, x) != '#') {                                                      \
+      if (board.at(cand_y, cand_x) == '#') {                                             \
+        const int stop_index = (y * board.map_x + x) * 4 + right;                        \
+                                                                                         \
+        past.push_back({stop_index, stops_map[stop_index]});                             \
+                                                                                         \
+        stops_map[stop_index] = redirect_index;                                          \
+      }                                                                                  \
+                                                                                         \
+      y += dirs[(forward)].first;                                                        \
+      x += dirs[(forward)].second;                                                       \
+                                                                                         \
+      cand_y += dirs[(forward)].first;                                                   \
+      cand_x += dirs[(forward)].second;                                                  \
+    }                                                                                    \
   }
+    STUFF(0)
+    STUFF(1)
+    STUFF(2)
+    STUFF(3)
 
-  template <typename functor_t>
-  void TestWithObstacle(const int obs_y, const int obs_x, const functor_t &functor) {
-    past.clear();
-
-    AddObstacle(obs_y, obs_x);
-    CorrectPathsAroundObstacle(obs_y, obs_x);
-
-    functor();
-
-    UndoFuture();
+#undef STUFF
   }
 
   void UndoFuture() {
     for (const auto [id, val] : past) {
       stops_map[id] = val;
     }
-  }
-
-  friend std::ostream &operator<<(std::ostream &out, const StopsMap &stops_map) {
-    for (size_t i = 0; i < stops_map.stops_map.size(); ++i) {
-      if (stops_map.stops_map[i] != 0) {
-        const int from_y = (i / 4) / stops_map.board.map_x;
-        const int from_x = (i / 4) % stops_map.board.map_x;
-        const int from_dir = i % 4;
-
-        const int to_y = (stops_map.stops_map[i] / 4) / stops_map.board.map_x;
-        const int to_x = (stops_map.stops_map[i] / 4) % stops_map.board.map_x;
-        const int to_dir = stops_map.stops_map[i] % 4;
-
-        out << std::format("direct ({}, {}, {}) to ({}, {}, {})\n", from_y + 1, from_x + 1,
-                           from_dir, to_y + 1, to_x + 1, to_dir);
-      }
-    }
-
-    return out;
   }
 
   std::vector<int> stops_map;
@@ -191,7 +172,23 @@ bool CheckIfInLoop(const Board &board, const StopsMap &stops_map, const int y, c
   return false;
 }
 
-int main() {
+std::pair<int, int> FindStartPoint(const Board &board) {
+  for (int y = 0; y < board.map_y; ++y) {
+    for (int x = 0; x < board.map_x; ++x) {
+      if (board.at(y, x) == '^') {
+        return {y, x};
+      }
+    }
+  }
+  return {0, 0};
+}
+
+int main(const int argc, const char* const* const argv) {
+  int N = 100;
+  if (argc == 2) {
+    N = std::stoi(argv[1]);
+  }
+
   std::ifstream fin("data/6.txt");
 
   std::vector<std::string> lines;
@@ -200,7 +197,7 @@ int main() {
     lines.push_back(line);
   }
 
-  std::vector<double> times(100);
+  std::vector<double> times(N);
 
   for (double &time : times) {
     const my::Timer timer;
@@ -208,17 +205,7 @@ int main() {
     Board board(lines);
     StopsMap stops_map(board);
 
-    int y = 0;
-    int x = 0;
-
-    for (y = 0; y < board.map_y; ++y) {
-      for (x = 0; x < board.map_x; ++x) {
-        if (board.at(y, x) == '^') {
-          goto L_STOP;
-        }
-      }
-    }
-  L_STOP:
+    auto [y, x] = FindStartPoint(board);
 
     int points = 0;
     int dir = 0;
@@ -231,9 +218,14 @@ int main() {
         dir = (dir + 1) % 4;
       } else {
         if (board.at(new_y, new_x) != ',') {
-          stops_map.TestWithObstacle(new_y, new_x, [&]() {
-            points += CheckIfInLoop(board, stops_map, y, x, dir);
-          });
+          stops_map.past.clear();
+
+          stops_map.AddObstacle(new_y, new_x);
+          stops_map.CorrectPathsAroundObstacle(new_y, new_x);
+
+          points += CheckIfInLoop(board, stops_map, y, x, dir);
+
+          stops_map.UndoFuture();
 
           board.set(new_y, new_x, ',');
         }
