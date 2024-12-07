@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -12,8 +13,9 @@ int main() {
 
   uint64_t points = 0;
 
+  my::Timer timer;
+
   for (std::string line; std::getline(fin, line);) {
-    // std::cout << line << '\n';
     std::stringstream sline(line);
 
     uint64_t test_value;
@@ -26,11 +28,11 @@ int main() {
     }
 
     std::vector<uint64_t> len(nums.size());
-    for (int i = 0; i < len.size(); ++i) {
+    for (size_t i = 0; i < len.size(); ++i) {
       len[i] = my::Pow<uint64_t>(10, std::to_string(nums[i]).size());
     }
     std::vector<uint64_t> pows3(nums.size());
-    for (int i = 0; i < pows3.size(); ++i) {
+    for (size_t i = 0; i < pows3.size(); ++i) {
       pows3[i] = my::Pow<uint64_t>(3, i);
     }
 
@@ -38,7 +40,7 @@ int main() {
     for (uint64_t i = 0; i < n; ++i) {
       uint64_t sum = nums[0];
 
-      for (int j = 1; j < nums.size(); ++j) {
+      for (size_t j = 1; j < nums.size(); ++j) {
         switch ((i / pows3[j - 1]) % 3) {
           case 0:
             sum += nums[j];
@@ -54,11 +56,13 @@ int main() {
 
       if (test_value == sum) {
         points += test_value;
-        std::cout << test_value << '\n';
         break;
       }
     }
   }
 
+  const double elapsed_time = timer.ElapsedTime();
+
   std::cout << points << '\n';
+  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
 }
