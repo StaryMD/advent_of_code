@@ -1,9 +1,11 @@
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,7 +19,7 @@ struct Board {
     map_y = lines.size();
     map_x = lines[0].size();
 
-    for (int i = 0; i < lines.size(); ++i) {
+    for (size_t i = 0; i < lines.size(); ++i) {
       std::copy(lines[i].data(), lines[i].data() + map_x, map.data() + i * map_x);
     }
   }
@@ -42,21 +44,19 @@ const std::vector<std::pair<int, int>> dirs = {
     {0, -1},
 };
 
-bool CheckIfInLoop(const Board &board, int y, int x) {
-  int dir = 0;
-
-  std::vector<bool> visit(board.map_x * board.map_y * 4);
+bool CheckIfInLoop(const Board &board, int y, int x, int dir) {
+  std::vector<bool> visit(board.map_x * board.map_y * 2);
 
   while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
     const int new_y = y + dirs[dir].first;
     const int new_x = x + dirs[dir].second;
 
     if (board.at(new_y, new_x) == '#') {
-      if (visit[(y * board.map_x + x) * 4 + dir]) {
+      if (visit[(y * board.map_x + x) * 2 + (dir & 1)]) {
         return true;
       }
 
-      visit[(y * board.map_x + x) * 4 + dir] = true;
+      visit[(y * board.map_x + x) * 2 + (dir & 1)] = true;
       dir = (dir + 1) % 4;
     } else {
       y = new_y;
@@ -76,54 +76,62 @@ int main() {
     lines.push_back(line);
   }
 
-  my::Timer timer;
+  std::vector<double> times(100);
 
-  Board board(lines);
+  for (double &time : times) {
+    Board board(lines);
 
-  int start_y = 0;
-  int start_x = 0;
+    const my::Timer timer;
 
-  for (int y = 0; y < board.map_y; ++y) {
-    for (int x = 0; x < board.map_x; ++x) {
-      if (board.at(y, x) == '^') {
-        start_y = y;
-        start_x = x;
-        goto L_STOP;
+    int start_y = 39;
+    int start_x = 46;
+
+    for (int y = 0; y < board.map_y; ++y) {
+      for (int x = 0; x < board.map_x; ++x) {
+        if (board.at(y, x) == '^') {
+          start_y = y;
+          start_x = x;
+          goto L_STOP;
+        }
       }
     }
-  }
-L_STOP:
+  L_STOP:
 
-  int y = start_y;
-  int x = start_x;
+    int y = start_y;
+    int x = start_x;
 
-  int points = 0;
-  int dir = 0;
+    int points = 0;
+    int dir = 0;
 
-  while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
-    const int new_y = y + dirs[dir].first;
-    const int new_x = x + dirs[dir].second;
+    while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
+      const int new_y = y + dirs[dir].first;
+      const int new_x = x + dirs[dir].second;
 
-    if (board.at(new_y, new_x) == '#') {
-      dir = (dir + 1) % 4;
-    } else {
-      y = new_y;
-      x = new_x;
+      if (board.at(new_y, new_x) == '#') {
+        dir = (dir + 1) % 4;
+      } else {
+        if (board.at(new_y, new_x) != ',') {
+          board.set(new_y, new_x, '#');
 
-      if (board.at(y, x) != ',') {
-        board.set(y, x, '#');
+          points += CheckIfInLoop(board, y, x, dir);
 
-        points += CheckIfInLoop(board, start_y, start_x);
-
-        board.set(y, x, ',');
+          board.set(new_y, new_x, ',');
+        }
+        y = new_y;
+        x = new_x;
       }
     }
+
+    if (points != 1705) {
+      std::cerr << "cooked : " << points << '\n';
+      return EXIT_FAILURE;
+    }
+
+    time = timer.ElapsedTime();
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  std::cout << std::fixed << std::setprecision(3)
+            << std::accumulate(times.begin(), times.end(), 0.0) * 1000 / times.size() << " ms\n";
 
   return 0;
 }
