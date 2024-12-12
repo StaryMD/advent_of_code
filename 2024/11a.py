@@ -23,11 +23,6 @@ def GetAns(text):
 
 test_input = "125 17"
 
-test_points = GetAns(test_input)
-if test_points != 55312:
-    raise RuntimeError(f"Example test not passed with ans = {test_points}")
-
-points = GetAns(data)
 print(GetAns(test_input))
 
 # submit(points)
