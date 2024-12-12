@@ -32,16 +32,8 @@ struct Map {
     std::fill(visits.begin(), visits.end(), false);
   }
 
-  void reset_visits() {
-    std::fill(visits.begin(), visits.end(), false);
-  }
-
   void reset_sides() {
     sides.clear();
-  }
-
-  bool can_adv(const int y, const int x, const int new_y, const int new_x) const {
-    return is_inside(new_y, new_x) && (at(new_y, new_x) == at(y, x) + 1);
   }
 
   bool is_inside(const int y, const int x) const {
@@ -60,10 +52,6 @@ struct Map {
     visits[y * size_x + x] = true;
   }
 
-  void unvisit(const int y, const int x) {
-    visits[y * size_x + x] = false;
-  }
-
   int size_y;
   int size_x;
 
@@ -74,15 +62,12 @@ struct Map {
 };
 
 void DFS(Map &map, const int y, const int x, int &area) {
-  if (map.visited(y, x)) {
-    return;
-  }
-
   map.visit(y, x);
-  area += 1;
+  ++area;
 
   const char region = map.at(y, x);
 
+#pragma unroll
   for (int i = 0; i < dirs.size(); ++i) {
     const int new_y = y + dirs[i].first;
     const int new_x = x + dirs[i].second;
