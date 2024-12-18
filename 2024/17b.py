@@ -1,17 +1,4 @@
 from aocd import data, submit
-import random
-import sys
-
-
-def difference(seq1, seq2):
-    if len(seq1) != len(seq2):
-        return 100
-
-    count = 0
-    for i in range(len(seq1)):
-        if seq1[i] != seq2[i]:
-            count += 1
-    return count
 
 
 def PrintProgram(program):
@@ -46,77 +33,6 @@ def PrintProgram(program):
                 print(f"c = a >> {op}")
             case _:
                 pass
-
-
-class ProgramState:
-    reg_a: int
-    reg_b: int
-    reg_c: int
-
-    program: list[int]
-    combo_operands = [0, 2, 5, 6, 7]
-
-    def __init__(self, a, b, c, p):
-        self.IP = 0
-
-        self.reg_a = a
-        self.reg_b = b
-        self.reg_c = c
-        self.program = p
-
-        self.cache = {}
-
-    def halted(self):
-        return self.IP >= len(self.program)
-
-    def id(self):
-        return (self.reg_a, self.reg_b, self.reg_c, self.IP)
-
-    def adv(self, output):
-        inst = self.program[self.IP]
-        op = self.program[self.IP + 1]
-
-        if inst in self.combo_operands:
-            match op:
-                case 4:
-                    op = self.reg_a
-                case 5:
-                    op = self.reg_b
-                case 6:
-                    op = self.reg_c
-
-        match inst:
-            case 0:
-                self.reg_a = self.reg_a // 2**op
-            case 1:
-                self.reg_b = self.reg_b ^ op
-            case 2:
-                self.reg_b = op % 8
-            case 3:
-                if self.reg_a != 0:
-                    self.IP = op - 2
-            case 4:
-                self.reg_b = self.reg_b ^ self.reg_c
-            case 5:
-                output.append(op % 8)
-            case 6:
-                self.reg_b = self.reg_a // 2**op
-            case 7:
-                self.reg_c = self.reg_a // 2**op
-            case _:
-                pass
-
-        self.IP += 2
-
-        return output
-
-    def run(self):
-        output = []
-
-        while self.IP < len(self.program):
-            output = self.adv(output)
-
-        return output
 
 
 def GetNextDigit(a, b, c):
