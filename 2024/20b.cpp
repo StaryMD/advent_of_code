@@ -1,13 +1,11 @@
 #include <algorithm>
 #include <array>
 #include <climits>
-#include <cstdint>
 #include <cstdio>
 #include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -110,9 +108,6 @@ struct Map {
 
   std::vector<char> map;
   std::vector<int> visits;
-
-  int start_y, start_x;
-  int end_y, end_x;
 };
 
 void DFS(Map &map, const int y, const int x, int dist) {
@@ -120,7 +115,7 @@ void DFS(Map &map, const int y, const int x, int dist) {
   ++dist;
 
 #pragma unroll
-  for (int i = 0; i < dirs.size(); ++i) {
+  for (int i = 0; i < 4; ++i) {
     const int new_y = y + dirs[i].first;
     const int new_x = x + dirs[i].second;
 
@@ -130,29 +125,16 @@ void DFS(Map &map, const int y, const int x, int dist) {
   }
 }
 
-int Distance(Map map, const int y1, const int x1, const int y2, const int x2) {
-  map.reset_visits();
-
-  DFS(map, y1, x1, 0);
-
-  return map.visited(y2, x2);
-}
-
-std::pair<int, int> FindCell(const Map &map, const char c) {
-  for (int y = 0; y < map.size_y; ++y) {
-    for (int x = 0; x < map.size_x; ++x) {
-      if (map.at(y, x) == c) {
-        return {y, x};
-      }
-    }
+int main(const int argc, const char* const* argv) {
+  int ITERATIONS = 1;
+  if (argc == 2) {
+    ITERATIONS = std::stoi(argv[1]);
   }
-  return {0, 0};
-}
 
-int main() {
+  constexpr int threshold = 100;
+  constexpr int cheat_max_dist = 20;
+
   std::ifstream fin("data/20.txt");
-
-  my::Timer timer;
 
   std::vector<std::string> lines;
 
@@ -160,40 +142,68 @@ int main() {
     lines.push_back(line);
   }
 
-  Map map(lines);
-  Map back_map(map);
+  my::Timer timer;
 
-  const auto [start_y, start_x] = FindCell(map, 'S');
-  const auto [end_y, end_x] = FindCell(map, 'E');
+  for (int _ = 0; _ != ITERATIONS; ++_) {
+    Map map(lines);
+    Map back_map(map);
 
-  map.at(start_y, start_x) = '.';
-  map.at(end_y, end_x) = '.';
+    int start_y = 0;
+    int start_x = 0;
+    int end_y = 0;
+    int end_x = 0;
 
-  DFS(map, start_y, start_x, 0);
-  DFS(back_map, end_y, end_x, 0);
+    for (int y = 0; y < map.size_y; ++y) {
+      for (int x = 0; x < map.size_x; ++x) {
+        if (map.at(y, x) == 'S') {
+          start_y = y;
+          start_x = x;
+        } else if (map.at(y, x) == 'E') {
+          end_y = y;
+          end_x = x;
+        }
+      }
+    }
 
-  constexpr int threshold = 100;
-  constexpr int cheat_max_dist = 20;
+    map.at(start_y, start_x) = '.';
+    map.at(end_y, end_x) = '.';
 
-  const int original_dist = map.visited(end_y, end_x);
-  const int max_dist = original_dist - threshold;
+    DFS(map, start_y, start_x, 0);
+    DFS(back_map, end_y, end_x, 0);
 
-  uint64_t points = 0;
+    int points = 0;
 
-  for (int cheat_start_y = 0; cheat_start_y < map.size_y; ++cheat_start_y) {
-    for (int cheat_start_x = 0; cheat_start_x < map.size_x; ++cheat_start_x) {
-      if (map.at(cheat_start_y, cheat_start_x) == '.') {
-        for (int cheat_end_y = 0; cheat_end_y < map.size_y; ++cheat_end_y) {
-          for (int cheat_end_x = 0; cheat_end_x < map.size_x; ++cheat_end_x) {
+    for (int path_y = end_y, path_x = end_x; path_y != start_y || path_x != start_x;) {
+#pragma unroll
+      for (int i = 0; i < 4; ++i) {
+        const int new_y = path_y + dirs[i].first;
+        const int new_x = path_x + dirs[i].second;
+
+        if (map.visited(new_y, new_x) < map.visited(path_y, path_x)) {
+          path_y = new_y;
+          path_x = new_x;
+          break;
+        }
+      }
+
+      if (map.at(path_y, path_x) == '.') {
+        const int top = std::max(1, path_y - cheat_max_dist);
+        const int bot = std::min(map.size_y - 1, path_y + cheat_max_dist) + 1;
+
+        for (int cheat_end_y = top; cheat_end_y != bot; ++cheat_end_y) {
+          const int left = std::max(1, path_x - cheat_max_dist);
+          const int right = std::min(map.size_x - 1, path_x + cheat_max_dist) + 1;
+
+          for (int cheat_end_x = left; cheat_end_x != right; ++cheat_end_x) {
             if (map.at(cheat_end_y, cheat_end_x) == '.') {
               const int cheat_dist =
-                  std::abs(cheat_start_x - cheat_end_x) + std::abs(cheat_start_y - cheat_end_y);
+                  std::abs(path_x - cheat_end_x) + std::abs(path_y - cheat_end_y);
 
               if (cheat_dist <= cheat_max_dist) {
-                const int total_dist = map.visited(cheat_start_y, cheat_start_x) + cheat_dist +
+                const int total_dist = map.visited(path_y, path_x) + cheat_dist +
                                        back_map.visited(cheat_end_y, cheat_end_x);
 
-                if (total_dist <= max_dist) {
+                if (total_dist <= map.visited(end_y, end_x) - threshold) {
                   points++;
                 }
               }
@@ -202,10 +212,16 @@ int main() {
         }
       }
     }
+
+    if (986082 != points) {
+      std::cerr << "BAD RESULTS : " << points << '\n';
+      break;
+    }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
+  const double elapsed_time = timer.ElapsedTime() / ITERATIONS;
 
-  std::cout << points << '\n';
   std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+
+  return 0;
 }
