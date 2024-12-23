@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <exception>
 #include <fstream>
 #include <iomanip>
 #include <ios>
@@ -21,15 +20,15 @@ std::string Unhash(const uint16_t node) {
 }
 
 // Check if a contains b, assumes both vectors are already sorted.
-bool Contains(const std::vector<uint16_t> &a, const std::vector<uint16_t> &b) {
-  const uint16_t* end_a = &a.back() + 1;
-  const uint16_t* end_b = &b.back() + 1;
+bool Contains(const std::vector<uint16_t> &a, const std::vector<std::pair<uint16_t, uint16_t>> &b) {
+  const uint16_t* end_a = a.data() + a.size();
+  const std::pair<uint16_t, uint16_t>* end_b = b.data() + b.size() - 1;
 
   const uint16_t* ptr_a = a.data();
-  const uint16_t* ptr_b = b.data();
+  const std::pair<uint16_t, uint16_t>* ptr_b = b.data();
 
   while (ptr_a != end_a && ptr_b != end_b) {
-    if (*ptr_a == *ptr_b) {
+    if (*ptr_a == ptr_b->first) {
       ++ptr_b;
     }
     ++ptr_a;
@@ -78,37 +77,47 @@ struct Graph {
 };
 
 struct DFS {
-  DFS(const Graph &graph_) : graph(graph_) {
-    visited.resize(graph.edges.size());
-  }
-
-  void Traverse(const uint16_t node) {
-    visited[node] = true;
-
-    if (not Contains(graph.edges[node], current_group)) {
-      return;
-    }
-
-    current_group.push_back(node);
-
-    if (current_group.size() > biggest_group.size()) {
-      biggest_group = current_group;
-    }
-
-    for (const uint16_t other_node : graph.edges[node]) {
-      if (not visited[other_node]) {
-        Traverse(other_node);
-      }
-    }
-    current_group.pop_back();
-  }
+  DFS(const Graph &graph_) : graph(graph_) {}
 
   void Traverse() {
+    std::vector<std::pair<uint16_t, uint16_t>> current_group;
+    std::vector<bool> visited(graph.edges.size());
+
     for (uint16_t node = 0; node < graph.edges.size(); ++node) {
       if (not graph.edges[node].empty()) {
         std::fill(visited.begin() + node + 1, visited.end(), false);
 
-        Traverse(node);
+        current_group.emplace_back(node, 0);
+
+        while (not current_group.empty()) {
+          const uint16_t node = current_group.back().first;
+
+          visited[node] = true;
+
+          const std::vector<uint16_t> &node_edges = graph.edges[node];
+
+          if (Contains(node_edges, current_group)) {
+            if (current_group.size() > biggest_group.size()) {
+              biggest_group.resize(current_group.size());
+
+              for (size_t i = 0; i < current_group.size(); ++i) {
+                biggest_group[i] = current_group[i].first;
+              }
+            }
+
+            uint16_t &starting_index = current_group.back().second;
+            while (starting_index != node_edges.size() && visited[node_edges[starting_index]]) {
+              ++starting_index;
+            }
+
+            if (starting_index != node_edges.size()) {
+              current_group.emplace_back(node_edges[starting_index], 0);
+              continue;
+            }
+          }
+
+          current_group.pop_back();
+        }
       }
     }
   }
@@ -130,10 +139,8 @@ struct DFS {
   }
 
   const Graph &graph;
-  std::vector<bool> visited;
 
   std::vector<uint16_t> biggest_group;
-  std::vector<uint16_t> current_group;
 };
 
 int main(const int argc, const char* const* argv) {
@@ -150,6 +157,8 @@ int main(const int argc, const char* const* argv) {
     lines.push_back(line);
   }
 
+  std::string answer;
+
   my::Timer timer;
 
   for (int _ = 0; _ != ITERATIONS; ++_) {
@@ -158,19 +167,19 @@ int main(const int argc, const char* const* argv) {
     DFS dfs(graph);
     dfs.Traverse();
 
-    const std::string answer = dfs.TranslateBiggestClique();
+    answer = dfs.TranslateBiggestClique();
 
     if (answer != "bd,bu,dv,gl,qc,rn,so,tm,wf,yl,ys,ze,zr") {
+      std::cout << "Answer: " << answer << '\n';
       std::cerr << "Expect: bd,bu,dv,gl,qc,rn,so,tm,wf,yl,ys,ze,zr\n";
       std::cerr << "BAD ANSWER!!!\n";
       return 1;
     }
   }
 
-  // std::cout << "Answer: " << answer << '\n';
-
   const double elapsed_time = timer.ElapsedTime() / ITERATIONS;
 
+  std::cout << "Answer: " << answer << '\n';
   std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e6 << " us\n";
 
   return 0;

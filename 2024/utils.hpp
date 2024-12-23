@@ -94,7 +94,7 @@ data_type constexpr Pow(data_type a, data_type b, const data_type mod) {
 }
 
 template <typename data_type>
-inline constexpr data_type Sqr(const data_type& x) {
+inline constexpr data_type Sqr(const data_type &x) {
   return x * x;
 }
 
@@ -106,7 +106,7 @@ bool constexpr IsSquare(const int_type x) {
 }
 
 template <typename int_type, typename functor = std::function<void(const int_type)>>
-void IterateThruDivsFirstHalf(int_type n, const functor& func) {
+void IterateThruDivsFirstHalf(int_type n, const functor &func) {
   for (int_type i = 1; i * i <= n; ++i) {
     if (n % i == 0) {
       func(i);
@@ -115,7 +115,7 @@ void IterateThruDivsFirstHalf(int_type n, const functor& func) {
 }
 
 template <typename int_type, typename functor = std::function<void(const int_type)>>
-void IterateThruDivs(int_type n, const functor& func) {
+void IterateThruDivs(int_type n, const functor &func) {
   for (int_type i = 1; i * i <= n; ++i) {
     if (n % i == 0) {
       func(i);
@@ -128,7 +128,7 @@ void IterateThruDivs(int_type n, const functor& func) {
 }
 
 template <typename int_type, typename functor = std::function<void(const int_type)>>
-void IterateThruDivsInOrder(const int_type n, const functor& func) {
+void IterateThruDivsInOrder(const int_type n, const functor &func) {
   std::vector<int_type> divs;
   for (int_type i = 1; i * i <= n; ++i) {
     if (n % i == 0) {
@@ -160,7 +160,7 @@ Factor_List Factorize(int_type n, const int_type pow = 1) {
   }
 
   if (pow != 1) {
-    for (auto& p : factors) {
+    for (auto &p : factors) {
       p.second *= pow;
     }
   }
@@ -170,9 +170,13 @@ Factor_List Factorize(int_type n, const int_type pow = 1) {
 
 class Timer {
  public:
-  Timer() { Reset(); }
+  Timer() {
+    Reset();
+  }
 
-  void Reset() { start_ = std::chrono::steady_clock::now(); }
+  void Reset() {
+    start_ = std::chrono::steady_clock::now();
+  }
 
   [[nodiscard]] double ElapsedTime() const {
     const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
