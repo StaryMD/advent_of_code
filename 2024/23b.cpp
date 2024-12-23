@@ -20,6 +20,24 @@ std::string Unhash(const uint16_t node) {
   return answer;
 }
 
+// Check if a contains b, assumes both vectors are already sorted.
+bool Contains(const std::vector<uint16_t> &a, const std::vector<uint16_t> &b) {
+  const uint16_t* end_a = &a.back() + 1;
+  const uint16_t* end_b = &b.back() + 1;
+
+  const uint16_t* ptr_a = a.data();
+  const uint16_t* ptr_b = b.data();
+
+  while (ptr_a != end_a && ptr_b != end_b) {
+    if (*ptr_a == *ptr_b) {
+      ++ptr_b;
+    }
+    ++ptr_a;
+  }
+
+  return ptr_b == end_b;
+}
+
 struct Graph {
   Graph(const std::vector<std::string> &lines) {
     edges.resize(26 * 26);
@@ -39,19 +57,6 @@ struct Graph {
   void AddBothEdges(const uint16_t start, const uint16_t end) {
     edges[start].push_back(end);
     edges[end].push_back(start);
-  }
-
-  bool IsConnected(std::string_view start, std::string_view end) const {
-    const uint16_t _start = (start[0] - 'a') * 26 + (start[1] - 'a');
-    const uint16_t _end = (end[0] - 'a') * 26 + (end[1] - 'a');
-
-    return IsConnected(_start, _end);
-  }
-
-  bool IsConnected(const uint16_t start, const uint16_t end) const {
-    const std::vector<uint16_t> &start_edges = edges[start];
-
-    return std::binary_search(start_edges.cbegin(), start_edges.cend(), end);
   }
 
   void PrintGraph() const {
@@ -80,13 +85,11 @@ struct DFS {
   void Traverse(const uint16_t node) {
     visited[node] = true;
 
-    for (size_t i = 0; i != current_group.size() - 1; ++i) {
-      const uint16_t other_node = current_group[i];
-
-      if (not graph.IsConnected(other_node, node)) {
-        return;
-      }
+    if (not Contains(graph.edges[node], current_group)) {
+      return;
     }
+
+    current_group.push_back(node);
 
     if (current_group.size() > biggest_group.size()) {
       biggest_group = current_group;
@@ -94,13 +97,10 @@ struct DFS {
 
     for (const uint16_t other_node : graph.edges[node]) {
       if (not visited[other_node]) {
-        current_group.push_back(other_node);
-
         Traverse(other_node);
-
-        current_group.pop_back();
       }
     }
+    current_group.pop_back();
   }
 
   void Traverse() {
@@ -108,13 +108,7 @@ struct DFS {
       if (not graph.edges[node].empty()) {
         std::fill(visited.begin() + node + 1, visited.end(), false);
 
-        current_group.push_back(node);
         Traverse(node);
-        current_group.pop_back();
-        if (not current_group.empty()) {
-          std::cout << "fuck\n";
-          std::terminate();
-        }
       }
     }
   }
