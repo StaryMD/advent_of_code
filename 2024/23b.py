@@ -11,8 +11,6 @@ def GetAns(connections):
 
         graph[left].append(right)
         graph[right].append(left)
-        graph[left].append(left)
-        graph[right].append(right)
 
     GetAns.biggest_group = []
 
