@@ -1,5 +1,6 @@
 from aocd import data, submit
 from collections import defaultdict
+import time
 
 
 def GetAns(connections):
@@ -23,18 +24,11 @@ def GetAns(connections):
         visited[node] = True
 
         if len(group) > len(GetAns.biggest_group):
-            good = True
+            for node2 in group[:-1]:
+                if node not in graph[node2]:
+                    return
 
-            for node in group:
-                if not good:
-                    break
-                for node2 in group:
-                    if node2 not in graph[node]:
-                        good = False
-                        break
-
-            if good:
-                GetAns.biggest_group = group
+            GetAns.biggest_group = group
 
         for other in graph[node]:
             DFS(group + [other], visited)
@@ -81,10 +75,14 @@ test_input = [
 ]
 
 test_points = GetAns(test_input)
+
 if test_points != "co,de,ka,ta":
     raise RuntimeError(f"Example test not passed with ans = {test_points}")
 
+start_s = time.time()
 points = GetAns(data.split("\n"))
+end_s = time.time()
+print(f"Elapsed time: {(end_s - start_s) * 1e3:0.3f}ms")
 print(points)
 
 # submit(points)

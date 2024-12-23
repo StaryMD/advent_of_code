@@ -88,4 +88,4 @@ if test_points != 7:
 points = GetAns(data.split("\n"))
 print(points)
 
-submit(points)
+# submit(points)
