@@ -28,6 +28,10 @@ struct Graph {
 
       AddBothEdges(start, end);
     }
+
+    for (std::vector<uint16_t> &node_edges : edges) {
+      std::sort(node_edges.begin(), node_edges.end());
+    }
   }
 
   void AddBothEdges(const uint16_t start, const uint16_t end) {
@@ -45,7 +49,7 @@ struct Graph {
   bool IsConnected(const uint16_t start, const uint16_t end) const {
     const std::vector<uint16_t> &start_edges = edges[start];
 
-    return std::find(start_edges.cbegin(), start_edges.cend(), end) != start_edges.cend();
+    return std::binary_search(start_edges.cbegin(), start_edges.cend(), end);
   }
 
   void PrintGraph() const {
@@ -77,14 +81,12 @@ struct DFS {
 
   void Traverse(const uint16_t node) {
     if (not visited[node]) {
-      current_group.push_back(node);
       visited[node] = true;
 
-      for (size_t i = 0; i < current_group.size() - 1; ++i) {
+      for (size_t i = 0; i != current_group.size() - 1; ++i) {
         const uint16_t other_node = current_group[i];
 
         if (not graph.IsConnected(other_node, node)) {
-          current_group.pop_back();
           return;
         }
       }
@@ -94,9 +96,12 @@ struct DFS {
       }
 
       for (const uint16_t other_node : graph.edges[node]) {
-        Traverse(other_node);
+        if (not visited[other_node]) {
+          current_group.push_back(other_node);
+          Traverse(other_node);
+          current_group.pop_back();
+        }
       }
-      current_group.pop_back();
     }
   }
 
@@ -105,17 +110,20 @@ struct DFS {
       if (not graph.edges[node].empty()) {
         ClearVisits();
 
+        current_group.push_back(node);
         Traverse(node);
+        current_group.pop_back();
       }
     }
   }
 
   std::string TranslateBiggestClique() {
     std::sort(biggest_group.begin(), biggest_group.end(), [](const uint16_t a, const uint16_t b) {
-      return a / 26 < b / 26 || (a / 26 == b / 16 && a % 26 < b % 26);
+      return a < b;
     });
 
     std::string answer;
+    answer.reserve(biggest_group.size() * 3);
     std::vector<std::string> computers;
 
     for (const uint16_t node : biggest_group) {
@@ -135,8 +143,11 @@ struct DFS {
   std::vector<uint16_t> current_group;
 };
 
-int main() {
-  my::Timer timer;
+int main(const int argc, const char* const* argv) {
+  int ITERATIONS = 1;
+  if (argc == 2) {
+    ITERATIONS = std::stoi(argv[1]);
+  }
 
   std::ifstream fin("data/23.txt");
 
@@ -146,16 +157,26 @@ int main() {
     lines.push_back(line);
   }
 
-  Graph graph(lines);
+  my::Timer timer;
 
-  DFS dfs(graph);
-  dfs.Traverse();
+  for (int _ = 0; _ != ITERATIONS; ++_) {
+    Graph graph(lines);
 
-  const std::string answer = dfs.TranslateBiggestClique();
+    DFS dfs(graph);
+    dfs.Traverse();
 
-  std::cout << "Answer: " << answer << '\n';
+    const std::string answer = dfs.TranslateBiggestClique();
 
-  const double elapsed_time = timer.ElapsedTime();
+    if (answer != "bd,bu,dv,gl,qc,rn,so,tm,wf,yl,ys,ze,zr") {
+      std::cerr << "Expect: bd,bu,dv,gl,qc,rn,so,tm,wf,yl,ys,ze,zr\n";
+      std::cerr << "BAD ANSWER!!!\n";
+      return 1;
+    }
+  }
+
+  // std::cout << "Answer: " << answer << '\n';
+
+  const double elapsed_time = timer.ElapsedTime() / ITERATIONS;
 
   std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e6 << " us\n";
 
