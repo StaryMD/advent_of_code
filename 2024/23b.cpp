@@ -2,6 +2,8 @@
 #include <climits>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iomanip>
 #include <ios>
@@ -75,32 +77,28 @@ struct DFS {
     visited.resize(graph.edges.size());
   }
 
-  void ClearVisits() {
-    std::fill(visited.begin(), visited.end(), false);
-  }
-
   void Traverse(const uint16_t node) {
-    if (not visited[node]) {
-      visited[node] = true;
+    visited[node] = true;
 
-      for (size_t i = 0; i != current_group.size() - 1; ++i) {
-        const uint16_t other_node = current_group[i];
+    for (size_t i = 0; i != current_group.size() - 1; ++i) {
+      const uint16_t other_node = current_group[i];
 
-        if (not graph.IsConnected(other_node, node)) {
-          return;
-        }
+      if (not graph.IsConnected(other_node, node)) {
+        return;
       }
+    }
 
-      if (current_group.size() > biggest_group.size()) {
-        biggest_group = current_group;
-      }
+    if (current_group.size() > biggest_group.size()) {
+      biggest_group = current_group;
+    }
 
-      for (const uint16_t other_node : graph.edges[node]) {
-        if (not visited[other_node]) {
-          current_group.push_back(other_node);
-          Traverse(other_node);
-          current_group.pop_back();
-        }
+    for (const uint16_t other_node : graph.edges[node]) {
+      if (not visited[other_node]) {
+        current_group.push_back(other_node);
+
+        Traverse(other_node);
+
+        current_group.pop_back();
       }
     }
   }
@@ -108,23 +106,24 @@ struct DFS {
   void Traverse() {
     for (uint16_t node = 0; node < graph.edges.size(); ++node) {
       if (not graph.edges[node].empty()) {
-        ClearVisits();
+        std::fill(visited.begin() + node + 1, visited.end(), false);
 
         current_group.push_back(node);
         Traverse(node);
         current_group.pop_back();
+        if (not current_group.empty()) {
+          std::cout << "fuck\n";
+          std::terminate();
+        }
       }
     }
   }
 
   std::string TranslateBiggestClique() {
-    std::sort(biggest_group.begin(), biggest_group.end(), [](const uint16_t a, const uint16_t b) {
-      return a < b;
-    });
+    std::sort(biggest_group.begin(), biggest_group.end());
 
     std::string answer;
     answer.reserve(biggest_group.size() * 3);
-    std::vector<std::string> computers;
 
     for (const uint16_t node : biggest_group) {
       answer += node / 26 + 'a';
