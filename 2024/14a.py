@@ -50,4 +50,4 @@ if test_points != 12:
 points = GetAns(data.split("\n"), (103, 101), 100)
 print(points)
 
-submit(points)
+# submit(points)

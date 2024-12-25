@@ -89,4 +89,4 @@ if test_points != 3:
 points = GetAns(data.split("\n"))
 print(points)
 
-submit(points)
+# submit(points)

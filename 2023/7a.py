@@ -60,4 +60,4 @@ if test_points != 6440:
 points = GetAns(data.split("\n"))
 print(points)
 
-submit(points)
+# submit(points)

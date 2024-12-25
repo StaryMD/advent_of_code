@@ -77,4 +77,4 @@ if test_points != 9:
 
 points = GetPoints(lines)
 print(points)
-submit(points)
+# submit(points)

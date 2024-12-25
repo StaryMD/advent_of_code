@@ -15,9 +15,7 @@ def GetLength(num, it):
     if num == 0:
         ans = GetLength(1, it + 1)
     elif len(s := str(num)) % 2 == 0:
-        ans = GetLength(int(s[: len(s) // 2]), it + 1) + GetLength(
-            int(s[len(s) // 2 :]), it + 1
-        )
+        ans = GetLength(int(s[: len(s) // 2]), it + 1) + GetLength(int(s[len(s) // 2 :]), it + 1)
     else:
         ans = GetLength(num * 2024, it + 1)
 
@@ -41,5 +39,4 @@ test_points = GetAns(test_input)
 points = GetAns(data)
 print(points)
 
-if ITS == 75:
-    submit(points)
+# submit(points)
