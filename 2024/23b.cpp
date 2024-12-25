@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <exception>
 #include <fstream>
 #include <iomanip>
 #include <ios>
@@ -74,7 +73,6 @@ struct Graph {
   }
 
   std::vector<std::vector<uint16_t>> edges;
-  std::vector<uint16_t> unique_nodes;
 };
 
 struct DFS {
