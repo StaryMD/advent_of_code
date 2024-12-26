@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -37,13 +36,12 @@ bool Contains(const std::vector<uint16_t> &a, const std::vector<uint16_t> &b) {
   return ptr_b == end_b;
 }
 
+template <size_t edge_count>
 struct Graph {
-  Graph(const std::vector<std::string> &lines) {
-    edges.resize(26 * 26);
-
-    for (const std::string &line : lines) {
-      const uint16_t start = (line[0] - 'a') * 26 + (line[1] - 'a');
-      const uint16_t end = (line[3] - 'a') * 26 + (line[4] - 'a');
+  Graph(const std::string &input) {
+    for (size_t i = 0; i < input.size(); i += 6) {
+      const uint16_t start = (input[i + 0] - 'a') * 26 + (input[i + 1] - 'a');
+      const uint16_t end = (input[i + 3] - 'a') * 26 + (input[i + 4] - 'a');
 
       AddBothEdges(start, end);
     }
@@ -72,13 +70,12 @@ struct Graph {
     }
   }
 
-  std::vector<std::vector<uint16_t>> edges;
+  std::array<std::vector<uint16_t>, edge_count> edges;
 };
 
+template <size_t edge_count>
 struct DFS {
-  DFS(const Graph &graph_) : graph(graph_) {
-    visited.resize(graph.edges.size());
-  }
+  DFS(const Graph<edge_count> &graph_) : graph(graph_) {}
 
   void Traverse(const uint16_t node) {
     visited[node] = true;
@@ -127,8 +124,8 @@ struct DFS {
     return answer;
   }
 
-  const Graph &graph;
-  std::vector<bool> visited;
+  const Graph<edge_count> &graph;
+  std::array<bool, edge_count> visited;
 
   std::vector<uint16_t> biggest_group;
   std::vector<uint16_t> current_group;
@@ -140,18 +137,12 @@ int main(const int argc, const char* const* argv) {
     ITERATIONS = std::stoi(argv[1]);
   }
 
-  std::ifstream fin("data/23.txt");
-
-  std::vector<std::string> lines;
-
-  for (std::string line; std::getline(fin, line);) {
-    lines.push_back(line);
-  }
+  const std::string input = my::ReadWholeFile("data/23.txt");
 
   my::Timer timer;
 
   for (int _ = 0; _ != ITERATIONS; ++_) {
-    Graph graph(lines);
+    Graph<26 * 26> graph(input);
 
     DFS dfs(graph);
     dfs.Traverse();

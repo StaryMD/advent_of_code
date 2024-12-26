@@ -1,44 +1,28 @@
 from aocd import data, submit
-
-
-points = 0
-patt_map = {}
-
-
-def Solve(towels, pattern):
-    global points
-    if len(pattern) == 0:
-        points += 1
-        return
-
-    global patt_map
-    if pattern in patt_map:
-        points += patt_map[pattern]
-        return
-
-    curr_points = points
-
-    for towel in towels:
-        if pattern.startswith(towel):
-            Solve(towels, pattern[len(towel) :])
-
-    patt_map[pattern] = points - curr_points
+from functools import cache
 
 
 def GetAns(text: list[str]):
     towels = text[0].replace(" ", "").split(",")
     patterns = text[2:]
 
-    global points
-    global patt_map
-    patt_map = {}
     points = 0
 
-    for pattern in patterns:
-        curr_points = points
+    @cache
+    def Solve(pattern):
+        if not pattern:
+            return 1
 
-        Solve(towels, pattern)
-        print(f"Pattern: {pattern} in {points - curr_points} ways")
+        curr_points = 0
+
+        for towel in towels:
+            if pattern.startswith(towel):
+                curr_points += Solve(pattern[len(towel) :])
+
+        return curr_points
+
+    for pattern in patterns:
+        points += Solve(pattern)
 
     return points
 
