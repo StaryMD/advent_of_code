@@ -1,6 +1,9 @@
+#include <cctype>
 #include <format>
+#include <ios>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "solution.hpp"
@@ -9,32 +12,64 @@
 
 int main(const int argc, const char* const* const argv) {
   int iterations = 1;
+  int wanted_year = 0;
+  int wanted_day = 0;
+  char wanted_part = 0;
 
-  if (argc == 2) {
+  if (argc >= 2) {
     iterations = std::stoi(argv[1]);
+
+    if (iterations < 1) {
+      throw std::runtime_error(
+          std::format("Cannot have a non-positive iterations number! : {}", iterations));
+    }
+    if (iterations != 1) {
+      std::cout << std::format("Will do {} iterations for every part\n", iterations);
+    }
+  }
+
+  if (argc >= 3) {
+    wanted_year = std::stoi(argv[2]);
+    std::cout << std::format("Will do only the year {}\n", wanted_year);
+  }
+
+  if (argc >= 4) {
+    wanted_day = std::stoi(argv[3]);
+    std::cout << std::format("Will do only the day {}\n", wanted_day);
+  }
+
+  if (argc >= 5) {
+    wanted_part = std::toupper(argv[4][0]);
+    std::cout << std::format("Will do only the part {}\n", wanted_part);
   }
 
   double total_elapsed_time_ms = 0;
 
   for (const auto &[year, days] : GetSolutionMap()) {
-    for (const auto &[day, parts] : days) {
-      const std::string input = GetInput(year, day);
+    if (wanted_year == 0 || year == wanted_year) {
+      for (const auto &[day, parts] : days) {
+        if (wanted_day == 0 || day == wanted_day) {
+          const std::string input = GetInput(year, day);
 
-      for (const auto &[part, solve] : parts) {
-        const my::Timer timer;
+          for (const auto &[part, solve] : parts) {
+            if (wanted_part == 0 || part == wanted_part) {
+              const my::Timer timer;
 
 #pragma unroll 1
-        for (int i = 1; i < iterations; ++i) {
-          solve(std::stringstream(input));
+              for (int i = 1; i < iterations; ++i) {
+                solve(std::stringstream(input));
+              }
+
+              const std::string ans = solve(std::stringstream(input));
+
+              const double elapsed_time_ms = timer.ElapsedTime() * 1e3;
+              total_elapsed_time_ms += elapsed_time_ms;
+
+              std::cout << std::format("{} {:2} {} in {:8.3f}ms for {}\n", year, day, part,
+                                       elapsed_time_ms / iterations, ans);
+            }
+          }
         }
-
-        const std::string ans = solve(std::stringstream(input));
-
-        const double elapsed_time_ms = timer.ElapsedTime() * 1e3;
-        total_elapsed_time_ms += elapsed_time_ms;
-
-        std::cout << std::format("{} {:2} {} in {:8.3f}ms for {}\n", year, day, part,
-                                 elapsed_time_ms / iterations, ans);
       }
     }
   }

@@ -10,7 +10,7 @@ target_include_directories(report PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_BI
 set_property(TARGET report PROPERTY CXX_STANDARD ${MY_CPP_VERSION})
 set_property(TARGET report PROPERTY CXX_STANDARD_REQUIRED ON)
 
-target_compile_options(report PRIVATE )
+target_compile_options(report PRIVATE -Ofast)
 
 find_package(Python REQUIRED)
 

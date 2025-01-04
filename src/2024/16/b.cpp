@@ -1,8 +1,7 @@
 #include <algorithm>
+#include <array>
 #include <climits>
 #include <cstdio>
-#include <format>
-#include <iostream>
 #include <string>
 #include <vector>
 
