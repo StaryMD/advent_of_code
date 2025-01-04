@@ -1,14 +1,13 @@
 #include <algorithm>
 #include <climits>
-#include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
+#include "utility.hpp"
+
+namespace day16a {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -103,19 +102,17 @@ std::pair<int, int> FindCell(const Map &map, const char c) {
   }
   return {0, 0};
 }
+}  // namespace day16a
 
-int main() {
-  std::ifstream fin("data/16.txt");
-
-  my::Timer timer;
-
+template <>
+std::string Solve<2024, 16, 'A'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  Map map(lines);
+  day16a::Map map(lines);
 
   const auto [start_y, start_x] = FindCell(map, 'S');
 
@@ -123,8 +120,5 @@ int main() {
 
   const auto [end_y, end_x] = FindCell(map, 'E');
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << map.visited(end_y, end_x) << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(map.visited(end_y, end_x));
 }

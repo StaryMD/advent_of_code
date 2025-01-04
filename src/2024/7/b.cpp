@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "solution.hpp"
-#include "utils.hpp"
+#include "utility.hpp"
 
 template <>
 std::string Solve<2024, 7, 'B'>(std::stringstream input) {

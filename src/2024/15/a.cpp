@@ -1,12 +1,13 @@
 #include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
+#include "utility.hpp"
+
+namespace day15a {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -111,15 +112,14 @@ bool MoveVertical(Map &map, const int y, const int x, const int dir) {
   return false;
 }
 
-int main() {
-  my::Timer timer;
+}  // namespace day15a
 
-  std::ifstream fin("data/15.txt");
-
+template <>
+std::string Solve<2024, 15, 'A'>(std::stringstream input) {
   std::vector<std::string> lines;
   std::string moves;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     if (line.empty()) {
       break;
     }
@@ -127,36 +127,36 @@ int main() {
     lines.push_back(line);
   }
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     moves += line;
   }
 
-  Map map(lines);
+  day15a::Map map(lines);
 
-  auto [y, x] = FindStartPoint(map);
+  auto [y, x] = day15a::FindStartPoint(map);
 
   for (const char move : moves) {
     switch (move) {
       case '^': {
-        if (MoveVertical(map, y, x, 0)) {
+        if (day15a::MoveVertical(map, y, x, 0)) {
           --y;
         }
         break;
       }
       case '>': {
-        if (MoveVertical(map, y, x, 1)) {
+        if (day15a::MoveVertical(map, y, x, 1)) {
           ++x;
         }
         break;
       }
       case 'v': {
-        if (MoveVertical(map, y, x, 2)) {
+        if (day15a::MoveVertical(map, y, x, 2)) {
           ++y;
         }
         break;
       }
       case '<': {
-        if (MoveVertical(map, y, x, 3)) {
+        if (day15a::MoveVertical(map, y, x, 3)) {
           --x;
         }
         break;
@@ -174,8 +174,5 @@ int main() {
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

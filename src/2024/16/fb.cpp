@@ -1,15 +1,14 @@
 #include <algorithm>
 #include <climits>
-#include <cstdint>
 #include <cstdio>
 #include <format>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
+
+namespace day16b {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -153,18 +152,17 @@ std::pair<int, int> FindCell(const Map &map, const char c) {
   return {0, 0};
 }
 
-int main() {
-  std::ifstream fin("data/16.txt");
+}  // namespace day16b
 
-  my::Timer timer;
-
+template <>
+std::string Solve<2024, 16, 'B'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  Map map(lines);
+  day16b::Map map(lines);
 
   const auto [start_y, start_x] = FindCell(map, 'S');
   const auto [end_y, end_x] = FindCell(map, 'E');
@@ -172,7 +170,6 @@ int main() {
   GetTrailScore(map, start_y, start_x);
 
   const int part1_score = map.visited(end_y, end_x);
-  std::cout << "Part 1 score: " << part1_score << '\n';
 
   MarkTrail(map, start_y, start_x, 1);
 
@@ -187,7 +184,6 @@ int main() {
         GetTrailScore(map, start_y, start_x);
 
         const int curr_score = map.visited(end_y, end_x);
-        std::cout << std::format("obs at {} {} got {}\n", y, x, curr_score);
 
         if (curr_score == part1_score) {
           MarkTrail(map, start_y, start_x, 2);
@@ -198,25 +194,11 @@ int main() {
     }
   }
 
-  for (int y = 0; y < map.size_y; ++y) {
-    for (int x = 0; x < map.size_x; ++x) {
-      if (map.get_color(y, x) != 0) {
-        std::cout << char('A' + map.get_color(y, x) - 1);
-      } else {
-        std::cout << map.at(y, x);
-      }
-    }
-    std::cout << '\n';
-  }
-
   int points = 0;
 
   for (const int color : map.colors) {
     points += (color != 0);
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

@@ -2,13 +2,13 @@
 #include <array>
 #include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
+#include "utility.hpp"
+
+namespace day12b {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -106,20 +106,21 @@ int SearchSides(Map &map) {
   return sides * 2;
 }
 
-int main() {
-  std::ifstream fin("data/12.txt");
+}  // namespace day12b
 
+template <>
+std::string Solve<2024, 12, 'B'>(std::stringstream input) {
   uint64_t points = 0;
 
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
   my::Timer timer;
 
-  Map map(lines);
+  day12b::Map map(lines);
 
   for (int y = 0; y < map.size_y; ++y) {
     for (int x = 0; x < map.size_x; ++x) {
@@ -127,17 +128,14 @@ int main() {
         int area = 0;
 
         map.reset_sides();
-        DFS(map, y, x, area);
+        day12b::DFS(map, y, x, area);
 
-        const int sides = SearchSides(map);
+        const int sides = day12b::SearchSides(map);
 
         points += area * sides;
       }
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e6 << " us\n";
+  return std::to_string(points);
 }

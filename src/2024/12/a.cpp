@@ -1,11 +1,12 @@
+#include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
+#include "utility.hpp"
+
+namespace day12a {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -29,8 +30,12 @@ struct Map {
     std::fill(visits.begin(), visits.end(), false);
   }
 
+  void reset_visits() {
+    std::fill(visits.begin(), visits.end(), false);
+  }
+
   bool can_adv(const int y, const int x, const int new_y, const int new_x) const {
-    return is_inside(new_y, new_x) && !visited(new_y, new_x) && (at(new_y, new_x) == at(y, x) + 1);
+    return is_inside(new_y, new_x) && (at(new_y, new_x) == at(y, x) + 1);
   }
 
   bool is_inside(const int y, const int x) const {
@@ -60,52 +65,60 @@ struct Map {
   std::vector<bool> visits;
 };
 
-void CountTrailheadScore(Map &map, const int y, const int x, int* score) {
-  if (map.at(y, x) == '9') {
-    ++(*score);
-
+void DFS(Map &map, const int y, const int x, int &area, int &perimeter) {
+  if (map.visited(y, x)) {
     return;
   }
 
-  for (const auto [dy, dx] : dirs) {
+  map.visit(y, x);
+  area += 1;
+
+  const char region = map.at(y, x);
+
+  for (const auto &[dy, dx] : dirs) {
     const int new_y = y + dy;
     const int new_x = x + dx;
 
-    if (map.can_adv(y, x, new_y, new_x)) {
-      map.visit(new_y, new_x);
+    if (!map.visited(new_y, new_x)) {
+      if (map.at(new_y, new_x) == region && map.is_inside(new_y, new_x)) {
+        DFS(map, new_y, new_x, area, perimeter);
+      }
+    }
 
-      CountTrailheadScore(map, new_y, new_x, score);
-
-      map.unvisit(new_y, new_x);
+    if (map.at(new_y, new_x) != region || !map.is_inside(new_y, new_x)) {
+      perimeter += 1;
     }
   }
 }
 
-int main() {
-  std::ifstream fin("data/10.txt");
+}  // namespace day12a
 
-  int points = 0;
+template <>
+std::string Solve<2024, 12, 'A'>(std::stringstream input) {
+  uint64_t points = 0;
 
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
   my::Timer timer;
 
-  Map map(lines);
+  day12a::Map map(lines);
 
   for (int y = 0; y < map.size_y; ++y) {
     for (int x = 0; x < map.size_x; ++x) {
-      if (lines[y][x] == '0') {
-        CountTrailheadScore(map, y, x, &points);
+      if (!map.visited(y, x)) {
+        int area = 0;
+        int perimeter = 0;
+
+        day12a::DFS(map, y, x, area, perimeter);
+
+        points += area * perimeter;
       }
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e6 << " μs\n";
+  return std::to_string(points);
 }

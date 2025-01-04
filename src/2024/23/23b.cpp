@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "utility.hpp"
 
 std::string Unhash(const uint16_t node) {
   std::string answer;

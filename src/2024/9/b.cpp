@@ -1,23 +1,20 @@
 #include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
+#include "utility.hpp"
 
 struct File {
   int id;
   int size;
 };
 
-int main() {
-  std::ifstream fin("data/9.txt");
-
+template <>
+std::string Solve<2024, 9, 'B'>(std::stringstream input) {
   std::string line;
-  fin >> line;
+  input >> line;
 
   my::Timer timer;
 
@@ -58,8 +55,5 @@ int main() {
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

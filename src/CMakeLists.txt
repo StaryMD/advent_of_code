@@ -1,7 +1,9 @@
-file(GLOB_RECURSE SOLUTION_FILES "*.cpp")
+file(GLOB_RECURSE SOLUTION_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 list(FILTER SOLUTION_FILES INCLUDE REGEX "[0-9]+/[0-9]+/[ab].cpp")
 
-add_executable(report report.cpp ${SOLUTION_FILES})
+file(GLOB_RECURSE UTILITY_FILES "${CMAKE_CURRENT_SOURCE_DIR}/utility/*.cpp")
+
+add_executable(report report.cpp ${SOLUTION_FILES} ${UTILITY_FILES})
 
 target_include_directories(report PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/gen)
 

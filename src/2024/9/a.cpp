@@ -1,22 +1,16 @@
 #include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
 
-int main() {
-  std::ifstream fin("data/9.txt");
-
+template <>
+std::string Solve<2024, 9, 'A'>(std::stringstream input) {
   std::string line;
   std::vector<int32_t> decomp;
   decomp.reserve(line.size() * 20);
-  fin >> line;
-
-  my::Timer timer;
+  input >> line;
 
   uint64_t points = 0;
 
@@ -48,8 +42,5 @@ int main() {
     points += decomp[i] * i;
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

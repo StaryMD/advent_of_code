@@ -5,9 +5,9 @@
 
 #include "solution.hpp"
 #include "solution_map.hpp"
-#include "utils.hpp"
+#include "utility.hpp"
 
-int main(const int argc, const char* const* const argv, const char* const* const env) {
+int main(const int argc, const char* const* const argv) {
   int iterations = 1;
 
   if (argc == 2) {
@@ -16,11 +16,11 @@ int main(const int argc, const char* const* const argv, const char* const* const
 
   double total_elapsed_time_ms = 0;
 
-  for (const auto [year, days] : solution_map) {
-    for (const auto [day, parts] : days) {
+  for (const auto &[year, days] : GetSolutionMap()) {
+    for (const auto &[day, parts] : days) {
       const std::string input = GetInput(year, day);
 
-      for (const auto [part, solve] : parts) {
+      for (const auto &[part, solve] : parts) {
         const my::Timer timer;
 
 #pragma unroll 1
@@ -33,7 +33,7 @@ int main(const int argc, const char* const* const argv, const char* const* const
         const double elapsed_time_ms = timer.ElapsedTime() * 1e3;
         total_elapsed_time_ms += elapsed_time_ms;
 
-        std::cout << std::format("{} {} {} in {:8.3f}ms for {}\n", year, day, part,
+        std::cout << std::format("{} {:2} {} in {:8.3f}ms for {}\n", year, day, part,
                                  elapsed_time_ms / iterations, ans);
       }
     }

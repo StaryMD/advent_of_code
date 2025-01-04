@@ -1,30 +1,21 @@
 #include <cctype>
-#include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
 
-int main() {
-  std::ifstream fin("data/8.txt");
-
-  my::Timer timer;
-
+template <>
+std::string Solve<2024, 8, 'A'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  const int Y = lines.size();
-  const int X = lines[0].size();
+  const int map_y = lines.size();
+  const int map_x = lines[0].size();
 
   std::vector<std::tuple<int, int, char>> antennas;
 
@@ -47,7 +38,7 @@ int main() {
         {
           const std::pair<int, int> p1 = {std::get<0>(antennas[i2]) + dy,
                                           std::get<1>(antennas[i2]) + dx};
-          if (p1.first >= 0 && p1.first < Y && p1.second >= 0 && p1.second < X &&
+          if (p1.first >= 0 && p1.first < map_y && p1.second >= 0 && p1.second < map_x &&
               lines[p1.first][p1.second] != '#') {
             lines[p1.first][p1.second] = '#';
             ++points;
@@ -56,7 +47,7 @@ int main() {
         {
           const std::pair<int, int> p1 = {std::get<0>(antennas[i1]) - dy,
                                           std::get<1>(antennas[i1]) - dx};
-          if (p1.first >= 0 && p1.first < Y && p1.second >= 0 && p1.second < X &&
+          if (p1.first >= 0 && p1.first < map_y && p1.second >= 0 && p1.second < map_x &&
               lines[p1.first][p1.second] != '#') {
             lines[p1.first][p1.second] = '#';
             ++points;
@@ -66,8 +57,5 @@ int main() {
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

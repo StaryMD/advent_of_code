@@ -1,5 +1,4 @@
-#ifndef MY_UTILS_HPP_
-#define MY_UTILS_HPP_
+#pragma once
 
 #include <chrono>
 #include <cmath>
@@ -189,5 +188,3 @@ class Timer {
 };
 
 }  // namespace my
-
-#endif  // MY_UTILS_HPP_

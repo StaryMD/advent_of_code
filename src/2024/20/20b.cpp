@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "utility.hpp"
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},

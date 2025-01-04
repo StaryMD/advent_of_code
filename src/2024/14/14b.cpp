@@ -1,12 +1,9 @@
 #include <cstdio>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "utils.hpp"
 
 constexpr int map_y = 103;
 constexpr int map_x = 101;
@@ -49,8 +46,6 @@ bool IsTree(const std::vector<Robot> &robots) {
 int main() {
   std::ifstream fin("data/14.txt");
 
-  my::Timer timer;
-
   std::vector<Robot> robots;
 
   for (std::string line; std::getline(fin, line);) {
@@ -78,8 +73,5 @@ int main() {
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
   std::cout << seconds << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
 }

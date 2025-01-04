@@ -4,10 +4,7 @@
 #include <map>
 #include <string>
 
-#include "solution.hpp"
+using solution_map_t =
+    std::map<int, std::map<int, std::map<char, std::function<std::string(std::stringstream)>>>>;
 
-inline const std::map<int,
-                      std::map<int, std::map<char, std::function<std::string(std::stringstream)>>>>
-    solution_map = {
-#include "solution_files.hpp"
-};
+const solution_map_t &GetSolutionMap();
