@@ -3,20 +3,11 @@
 
 #include <chrono>
 #include <cmath>
-#include <fstream>
 #include <functional>
 #include <unordered_map>
 #include <vector>
 
 namespace my {
-
-inline std::string ReadWholeFile(const std::string &file_name) {
-  std::ifstream file(file_name);
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-
-  return buffer.str();
-}
 
 using Factor_List = std::unordered_map<int, int>;
 

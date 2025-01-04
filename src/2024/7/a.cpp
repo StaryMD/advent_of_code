@@ -1,22 +1,17 @@
 #include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
 
-int main() {
-  std::ifstream fin("data/7.txt");
-
+template <>
+std::string Solve<2024, 7, 'A'>(std::stringstream input) {
   uint64_t points = 0;
 
-  my::Timer timer;
-
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     std::stringstream sline(line);
 
     uint64_t test_value;
@@ -48,8 +43,5 @@ int main() {
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

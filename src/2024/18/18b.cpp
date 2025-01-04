@@ -1,5 +1,4 @@
 #include <climits>
-#include <cstdint>
 #include <cstdio>
 #include <fstream>
 #include <iomanip>
@@ -8,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "solution.hpp"
 #include "utils.hpp"
 
 const std::array<std::pair<int, int>, 4> dirs = {

@@ -1,17 +1,11 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
-#include <fstream>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <numeric>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "utils.hpp"
+#include "solution.hpp"
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -183,68 +177,45 @@ std::pair<int, int> FindStartPoint(const Board &board) {
   return {0, 0};
 }
 
-int main(const int argc, const char* const* const argv) {
-  int N = 100;
-  if (argc == 2) {
-    N = std::stoi(argv[1]);
-  }
-
-  std::ifstream fin("data/6.txt");
-
+template <>
+std::string Solve<2024, 6, 'B'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; fin >> line;) {
+  for (std::string line; input >> line;) {
     lines.push_back(line);
   }
 
-  std::vector<double> times(N);
+  Board board(lines);
+  StopsMap stops_map(board);
 
-  for (double &time : times) {
-    const my::Timer timer;
+  auto [y, x] = FindStartPoint(board);
 
-    Board board(lines);
-    StopsMap stops_map(board);
+  int points = 0;
+  int dir = 0;
 
-    auto [y, x] = FindStartPoint(board);
+  while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
+    const int new_y = y + dirs[dir].first;
+    const int new_x = x + dirs[dir].second;
 
-    int points = 0;
-    int dir = 0;
+    if (board.at(new_y, new_x) == '#') {
+      dir = (dir + 1) % 4;
+    } else {
+      if (board.at(new_y, new_x) != ',') {
+        stops_map.past.clear();
 
-    while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
-      const int new_y = y + dirs[dir].first;
-      const int new_x = x + dirs[dir].second;
+        stops_map.AddObstacle(new_y, new_x);
+        stops_map.CorrectPathsAroundObstacle(new_y, new_x);
 
-      if (board.at(new_y, new_x) == '#') {
-        dir = (dir + 1) % 4;
-      } else {
-        if (board.at(new_y, new_x) != ',') {
-          stops_map.past.clear();
+        points += CheckIfInLoop(board, stops_map, y, x, dir);
 
-          stops_map.AddObstacle(new_y, new_x);
-          stops_map.CorrectPathsAroundObstacle(new_y, new_x);
+        stops_map.UndoFuture();
 
-          points += CheckIfInLoop(board, stops_map, y, x, dir);
-
-          stops_map.UndoFuture();
-
-          board.set(new_y, new_x, ',');
-        }
-        y = new_y;
-        x = new_x;
+        board.set(new_y, new_x, ',');
       }
+      y = new_y;
+      x = new_x;
     }
-
-    if (points != 1705) {
-      std::cerr << "cooked : " << points << '\n';
-      return EXIT_FAILURE;
-    }
-
-    time = timer.ElapsedTime();
   }
 
-  std::cout << std::fixed << std::setprecision(3)
-            << std::accumulate(times.begin(), times.end(), 0.0) * 1000 / times.size() << " ms\n";
-
-  return 0;
+  return std::to_string(points);
 }
-

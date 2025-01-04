@@ -1,21 +1,17 @@
 #include <cstdint>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "solution.hpp"
 #include "utils.hpp"
 
-int main() {
-  std::ifstream fin("data/7.txt");
-
+template <>
+std::string Solve<2024, 7, 'B'>(std::stringstream input) {
   uint64_t points = 0;
 
-  my::Timer timer;
-
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     std::stringstream sline(line);
 
     uint64_t test_value;
@@ -31,17 +27,14 @@ int main() {
     for (size_t i = 0; i < len.size(); ++i) {
       len[i] = my::Pow<uint64_t>(10, std::to_string(nums[i]).size());
     }
-    std::vector<uint64_t> pows3(nums.size());
-    for (size_t i = 0; i < pows3.size(); ++i) {
-      pows3[i] = my::Pow<uint64_t>(3, i);
-    }
 
     const uint64_t n = my::Pow<uint64_t>(3, nums.size() - 1);
     for (uint64_t i = 0; i < n; ++i) {
       uint64_t sum = nums[0];
+      uint64_t pow3 = 1;
 
       for (size_t j = 1; j < nums.size(); ++j) {
-        switch ((i / pows3[j - 1]) % 3) {
+        switch ((i / pow3) % 3) {
           case 0:
             sum += nums[j];
             break;
@@ -52,6 +45,7 @@ int main() {
             sum = sum * len[j] + nums[j];
             break;
         }
+        pow3 *= 3;
       }
 
       if (test_value == sum) {
@@ -61,8 +55,5 @@ int main() {
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }
