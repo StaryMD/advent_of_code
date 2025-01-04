@@ -61,12 +61,12 @@ struct Map {
     visits[y * size_x + x] = score;
   }
 
-  int get_color(const int y, const int x) const {
-    return colors[y * size_x + x];
+  int get_color(const int y, const int x, const int l) const {
+    return colors[y * size_x + x] & (1 << l);
   }
 
   void color(const int y, const int x, const int l) {
-    colors[y * size_x + x] = l;
+    colors[y * size_x + x] |= 1 << l;
   }
 
   void unvisit(const int y, const int x) {
@@ -84,43 +84,39 @@ struct Map {
 void GetTrailScore(Map &map, const int y, const int x, const int dir = 1, const int score = 0) {
   map.visit(y, x, score);
 
-  if (map.at(y, x) == 'E') {
-    return;
-  }
-
   for (int i = 0; i < 4; ++i) {
-    if (i == (dir + 2) % 4) {
+    const int new_dir = (i + dir) % 4;
+
+    if (new_dir == (dir + 2) % 4) {
       continue;
     }
 
-    const int new_y = y + dirs[i].first;
-    const int new_x = x + dirs[i].second;
+    const int new_y = y + dirs[new_dir].first;
+    const int new_x = x + dirs[new_dir].second;
 
     if ((score < map.visited(new_y, new_x) || map.visited(new_y, new_x) == INT_MAX) &&
         map.at(new_y, new_x) != '#') {
-      if (i == dir) {
-        GetTrailScore(map, new_y, new_x, i, score + 1);
+      if (new_dir == dir) {
+        GetTrailScore(map, new_y, new_x, new_dir, score + 1);
       } else {
-        GetTrailScore(map, new_y, new_x, i, score + 1001);
+        GetTrailScore(map, new_y, new_x, new_dir, score + 1001);
       }
     }
   }
 }
 
-int MarkTrail(Map &map, const int y, const int x, const int color, const int dir = 1,
-              const int score = 0) {
+bool MarkTrail(Map &map, const int y, const int x, const int color, const int dir = 1,
+               const int score = 0) {
   if (map.at(y, x) == 'E') {
-    if (map.get_color(y, x) == 0 || map.get_color(y, x) != 1) {
-      map.color(y, x, color);
-    }
+    map.color(y, x, color);
 
-    return 1;
+    return true;
   }
 
   bool is_good = false;
 
   for (int new_dir = 0; new_dir < 4; ++new_dir) {
-    if (new_dir == (dir + 2) % 4) {
+    if (is_good || new_dir == (dir + 2) % 4) {
       continue;
     }
 
@@ -133,7 +129,7 @@ int MarkTrail(Map &map, const int y, const int x, const int color, const int dir
     }
   }
 
-  if (is_good && (map.get_color(y, x) == 0 || map.get_color(y, x) != 1)) {
+  if (is_good) {
     map.color(y, x, color);
   }
 
@@ -170,11 +166,39 @@ std::string Solve<2024, 16, 'B'>(std::stringstream input) {
 
   const int part1_score = map.visited(end_y, end_x);
 
-  MarkTrail(map, start_y, start_x, 1);
+  MarkTrail(map, start_y, start_x, 0);
 
   for (int y = 0; y < map.size_y; ++y) {
     for (int x = 0; x < map.size_x; ++x) {
-      if (map.get_color(y, x) == 1) {
+      if (map.get_color(y, x, 0)) {
+        int valid_neighs_count = 0;
+
+        for (int dir = 0; dir < 4; ++dir) {
+          const int new_y = y + day16b::dirs[dir].first;
+          const int new_x = x + day16b::dirs[dir].second;
+
+          if (map.at(new_y, new_x) != '#') {
+            ++valid_neighs_count;
+          }
+        }
+
+        if (valid_neighs_count > 2) {
+          for (int dir = 0; dir < 4; ++dir) {
+            const int new_y = y + day16b::dirs[dir].first;
+            const int new_x = x + day16b::dirs[dir].second;
+
+            if (map.get_color(new_y, new_x, 0) && map.visited(new_y, new_x) > map.visited(y, x)) {
+              map.color(new_y, new_x, 1);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (int y = 0; y < map.size_y; ++y) {
+    for (int x = 0; x < map.size_x; ++x) {
+      if (map.get_color(y, x, 1)) {
         const char prev_val = map.at(y, x);
 
         map.at(y, x) = '#';
@@ -195,8 +219,10 @@ std::string Solve<2024, 16, 'B'>(std::stringstream input) {
 
   int points = 0;
 
-  for (const int color : map.colors) {
-    points += (color != 0);
+  for (int y = 0; y < map.size_y; ++y) {
+    for (int x = 0; x < map.size_x; ++x) {
+      points += map.get_color(y, x, 2) != 0;
+    }
   }
 
   return std::to_string(points);

@@ -30,17 +30,17 @@ int main(const int argc, const char* const* const argv) {
 
   if (argc >= 3) {
     wanted_year = std::stoi(argv[2]);
-    std::cout << std::format("Will do only the year {}\n", wanted_year);
+    std::cout << std::format("Will do only year {}\n", wanted_year);
   }
 
   if (argc >= 4) {
     wanted_day = std::stoi(argv[3]);
-    std::cout << std::format("Will do only the day {}\n", wanted_day);
+    std::cout << std::format("Will do only day {}\n", wanted_day);
   }
 
   if (argc >= 5) {
     wanted_part = std::toupper(argv[4][0]);
-    std::cout << std::format("Will do only the part {}\n", wanted_part);
+    std::cout << std::format("Will do only part {}\n", wanted_part);
   }
 
   double total_elapsed_time_ms = 0;
