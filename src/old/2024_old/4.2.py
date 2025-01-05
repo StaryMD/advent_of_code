@@ -10,33 +10,6 @@ with open("data/4.txt") as f:
 
 
 def GetPoints(lines):
-    wanted = "MAS"
-
-    deltas = (
-        (1, 1),
-        (1, -1),
-        (-1, -1),
-        (-1, 1),
-    )
-
-    def Check(lines, wanted, y, x, d):
-        if (
-            (0 <= y + (len(wanted) - 1) * d[0] < len(lines))
-            and (0 <= x + (len(wanted) - 1) * d[1] < len(lines[y]))
-            and (0 <= y < len(lines))
-            and (0 <= x < len(lines[y]))
-        ):
-            s = ""
-            for i in range(len(wanted)):
-                try:
-                    s += lines[y + i * d[0]][x + i * d[1]]
-                except IndexError:
-                    return False
-
-            return s == wanted
-
-        return False
-
     points = 0
 
     for y in range(1, len(lines) - 1):
