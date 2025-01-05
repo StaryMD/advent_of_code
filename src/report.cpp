@@ -1,6 +1,5 @@
 #include <cctype>
 #include <format>
-#include <ios>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -44,6 +43,7 @@ int main(const int argc, const char* const* const argv) {
   }
 
   double total_elapsed_time_ms = 0;
+  int star_counter = 0;
 
   for (const auto &[year, days] : GetSolutionMap()) {
     if (wanted_year == 0 || year == wanted_year) {
@@ -67,6 +67,7 @@ int main(const int argc, const char* const* const argv) {
 
               std::cout << std::format("{} {:2} {} in {:8.3f}ms for {}\n", year, day, part,
                                        elapsed_time_ms / iterations, ans);
+              ++star_counter;
             }
           }
         }
@@ -75,8 +76,9 @@ int main(const int argc, const char* const* const argv) {
   }
 
   std::cout << '\n';
-  std::cout << std::format("Useful time: {:0.3f}ms\n", total_elapsed_time_ms / iterations);
   std::cout << std::format("Total elapsed time: {:0.3f}ms\n", total_elapsed_time_ms);
+  std::cout << std::format("Useful time: {:0.3f}ms\n", total_elapsed_time_ms / iterations);
+  std::cout << std::format("Stars: {}\n", star_counter);
 
   return 0;
 }
