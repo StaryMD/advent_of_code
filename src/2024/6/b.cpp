@@ -8,6 +8,8 @@
 
 #include "solution.hpp"
 
+namespace day6b {
+
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
     std::pair{0, 1},
@@ -178,6 +180,8 @@ std::pair<int, int> FindStartPoint(const Board &board) {
   return {0, 0};
 }
 
+}  // namespace day6b
+
 template <>
 std::string Solve<2024, 6, 'B'>(std::stringstream input) {
   std::vector<std::string> lines;
@@ -186,8 +190,8 @@ std::string Solve<2024, 6, 'B'>(std::stringstream input) {
     lines.push_back(line);
   }
 
-  Board board(lines);
-  StopsMap stops_map(board);
+  day6b::Board board(lines);
+  day6b::StopsMap stops_map(board);
 
   auto [y, x] = FindStartPoint(board);
 
@@ -195,8 +199,8 @@ std::string Solve<2024, 6, 'B'>(std::stringstream input) {
   int dir = 0;
 
   while (y > 0 && y < board.map_y - 1 && x > 0 && x < board.map_x - 1) {
-    const int new_y = y + dirs[dir].first;
-    const int new_x = x + dirs[dir].second;
+    const int new_y = y + day6b::dirs[dir].first;
+    const int new_x = x + day6b::dirs[dir].second;
 
     if (board.at(new_y, new_x) == '#') {
       dir = (dir + 1) % 4;
