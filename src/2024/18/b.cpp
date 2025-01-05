@@ -1,6 +1,7 @@
 #include <array>
 #include <climits>
 #include <cstdio>
+#include <deque>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -95,18 +96,32 @@ struct Map {
   std::vector<int> colors;
 };
 
-void DFS(Map &map, const int y, const int x, int dist) {
-  map.visit(y, x, dist);
-  ++dist;
+void DFS(Map &map, const int goal_y, const int goal_x, const int y, const int x, int dist) {
+  struct State {
+    int y, x, dist;
+  };
 
-#pragma unroll
-  for (int i = 0; i < dirs.size(); ++i) {
-    const int new_y = y + dirs[i].first;
-    const int new_x = x + dirs[i].second;
+  std::deque<State> states;
+  states.emplace_back(y, x, dist);
+  map.visit(y, x, 0);
 
-    if (dist < map.visited(new_y, new_x) && map.at(new_y, new_x) != '#' &&
-        map.is_inside(new_y, new_x)) {
-      DFS(map, new_y, new_x, dist);
+  int counter = 0;
+
+  while (not states.empty()) {
+    const auto [y, x, dist] = states.front();
+    states.pop_front();
+
+    const int new_dist = dist + 1;
+
+    for (int i = 0; i < dirs.size(); ++i) {
+      const int new_y = y + dirs[i].first;
+      const int new_x = x + dirs[i].second;
+
+      if ((new_dist < map.visited(new_y, new_x)) && map.at(new_y, new_x) != '#' &&
+          map.is_inside(new_y, new_x)) {
+        states.emplace_back(new_y, new_x, new_dist);
+        map.visit(new_y, new_x, new_dist);
+      }
     }
   }
 }
@@ -141,7 +156,7 @@ std::string Solve<2024, 18, 'B'>(std::stringstream input) {
     map.at(y, x) = '#';
 
     map.reset_visits();
-    DFS(map, 0, 0, 0);
+    DFS(map, map.size_y - 1, map.size_x - 1, 0, 0, 0);
 
     if (map.visited(map.size_y - 1, map.size_x - 1) == INT_MAX) {
       return lines[i];
