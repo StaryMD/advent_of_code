@@ -1,17 +1,15 @@
 #include <cctype>
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+
+#include "solution.hpp"
 
 int GetDigit(const std::string &str, const int pos) {
   const static std::unordered_map<std::string_view, int> digits = {
       {"one", 1},  {"two", 2},   {"six", 6},   {"four", 4},  {"five", 5},
       {"nine", 9}, {"three", 3}, {"seven", 7}, {"eight", 8},
   };
-
-  int ans = -1;
 
   for (const auto [digit_str, digit_int] : digits) {
     if (pos >= digit_str.size() - 1) {
@@ -24,20 +22,19 @@ int GetDigit(const std::string &str, const int pos) {
       }
 
       if (local_ans != -1) {
-        ans = local_ans;
+        return local_ans;
       }
     }
   }
 
-  return ans;
+  return -1;
 }
 
-int main() {
-  std::ifstream fin("data/day1.in");
-
+template <>
+std::string Solve<2023, 1, 'B'>(std::stringstream input) {
   int ans = 0;
 
-  for (std::string str; std::getline(fin, str);) {
+  for (std::string str; std::getline(input, str);) {
     int first = -1;
     int second = 0;
 
@@ -61,14 +58,10 @@ int main() {
       }
     }
 
-    std::cout << str << ' ' << first << ' ' << second << '\n';
-
     const int val = first * 10 + second;
 
     ans += val;
   }
 
-  std::cout << "Answer: " << ans << '\n';
-
-  return 0;
+  return std::to_string(ans);
 }

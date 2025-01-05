@@ -1,13 +1,12 @@
-#include <fstream>
-#include <iostream>
 #include <string>
 
-int main() {
-  std::ifstream fin("data/day1.in");
+#include "solution.hpp"
 
+template <>
+std::string Solve<2023, 1, 'A'>(std::stringstream input) {
   int ans = 0;
 
-  for (std::string str; std::getline(fin, str);) {
+  for (std::string str; std::getline(input, str);) {
     int first = -1;
     int second = 0;
 
@@ -29,7 +28,5 @@ int main() {
     ans += val;
   }
 
-  std::cout << "Answer: " << ans << '\n';
-
-  return 0;
+  return std::to_string(ans);
 }

@@ -1,14 +1,14 @@
+#include <array>
 #include <climits>
-#include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "utility.hpp"
+#include "solution.hpp"
+
+namespace day18a {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -24,27 +24,9 @@ struct Map {
 
     map.resize(size_y * size_x);
     visits.resize(size_y * size_x);
-    colors.resize(size_y * size_x);
 
     std::fill(map.begin(), map.end(), '.');
     std::fill(visits.begin(), visits.end(), INT_MAX);
-    std::fill(colors.begin(), colors.end(), 0);
-  }
-
-  Map(const std::vector<std::string> &lines) {
-    size_y = lines.size();
-    size_x = lines[0].size();
-
-    map.resize(size_y * size_x);
-    visits.resize(size_y * size_x);
-    colors.resize(size_y * size_x);
-
-    for (size_t i = 0; i < lines.size(); ++i) {
-      std::copy(lines[i].data(), lines[i].data() + size_x, map.data() + i * size_x);
-    }
-
-    std::fill(visits.begin(), visits.end(), INT_MAX);
-    std::fill(colors.begin(), colors.end(), 0);
   }
 
   void reset_visits() {
@@ -75,14 +57,6 @@ struct Map {
     visits[y * size_x + x] = score;
   }
 
-  int get_color(const int y, const int x) const {
-    return colors[y * size_x + x];
-  }
-
-  void color(const int y, const int x, const int l) {
-    colors[y * size_x + x] = l;
-  }
-
   void unvisit(const int y, const int x) {
     visits[y * size_x + x] = INT_MAX;
   }
@@ -92,7 +66,6 @@ struct Map {
 
   std::vector<char> map;
   std::vector<int> visits;
-  std::vector<int> colors;
 };
 
 void DFS(Map &map, const int y, const int x, int dist) {
@@ -111,20 +84,17 @@ void DFS(Map &map, const int y, const int x, int dist) {
   }
 }
 
-int main() {
-  std::ifstream fin("data/18.txt");
+}  // namespace day18a
 
-  uint64_t points = 0;
-
-  my::Timer timer;
-
+template <>
+std::string Solve<2024, 18, 'A'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  Map map(71, 71);
+  day18a::Map map(71, 71);
 
   for (int i = 0; i < 1024; ++i) {
     std::stringstream ss;
@@ -138,8 +108,5 @@ int main() {
 
   DFS(map, 0, 0, 0);
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << map.visited(map.size_y - 1, map.size_x - 1) << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(map.visited(map.size_y - 1, map.size_x - 1));
 }

@@ -1,14 +1,14 @@
+#include <array>
 #include <climits>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "solution.hpp"
-#include "utility.hpp"
+
+namespace day18b {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -104,29 +104,27 @@ void DFS(Map &map, const int y, const int x, int dist) {
     const int new_y = y + dirs[i].first;
     const int new_x = x + dirs[i].second;
 
-    if ((dist < map.visited(new_y, new_x)) && map.at(new_y, new_x) != '#' &&
+    if (dist < map.visited(new_y, new_x) && map.at(new_y, new_x) != '#' &&
         map.is_inside(new_y, new_x)) {
       DFS(map, new_y, new_x, dist);
     }
   }
 }
 
-int main() {
-  std::ifstream fin("data/18.txt");
+}  // namespace day18b
 
-  my::Timer timer;
-
+template <>
+std::string Solve<2024, 18, 'B'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  Map map(71, 71);
+  day18b::Map map(71, 71);
 
   for (int i = 0; i < 1024; ++i) {
-    std::stringstream ss;
-    ss << lines[i];
+    std::stringstream ss(lines[i]);
     int x, y;
     char t;
     ss >> x >> t >> y;
@@ -135,8 +133,7 @@ int main() {
   }
 
   for (int i = 1024; i < lines.size(); ++i) {
-    std::stringstream ss;
-    ss << lines[i];
+    std::stringstream ss(lines[i]);
     int x, y;
     char t;
     ss >> x >> t >> y;
@@ -147,12 +144,9 @@ int main() {
     DFS(map, 0, 0, 0);
 
     if (map.visited(map.size_y - 1, map.size_x - 1) == INT_MAX) {
-      std::cout << lines[i] << '\n';
-      break;
+      return lines[i];
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return "n/a";
 }

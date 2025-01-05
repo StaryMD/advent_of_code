@@ -1,8 +1,10 @@
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "solution.hpp"
+
+namespace day2b {
 
 std::vector<std::string> Tokenizer(const std::string &str) {
   std::vector<std::string> ans;
@@ -40,13 +42,14 @@ std::vector<std::string> Tokenizer(const std::string &str) {
   return ans;
 }
 
-int main() {
-  std::ifstream fin("data/day2.in");
+}  // namespace day2b
 
+template <>
+std::string Solve<2023, 2, 'B'>(std::stringstream input) {
   int ans = 0;
 
-  for (std::string str; std::getline(fin, str);) {
-    const std::vector<std::string> tokens = Tokenizer(str);
+  for (std::string str; std::getline(input, str);) {
+    const std::vector<std::string> tokens = day2b::Tokenizer(str);
 
     std::unordered_map<char, int> map;
     std::unordered_map<char, int> max_map;
@@ -70,7 +73,5 @@ int main() {
     ans += power;
   }
 
-  std::cout << "Answer: " << ans << '\n';
-
-  return 0;
+  return std::to_string(ans);
 }

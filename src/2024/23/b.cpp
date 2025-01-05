@@ -1,15 +1,15 @@
 #include <algorithm>
+#include <array>
 #include <climits>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <iomanip>
-#include <ios>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "utility.hpp"
+#include "solution.hpp"
+
+namespace day23b {
 
 std::string Unhash(const uint16_t node) {
   std::string answer;
@@ -56,19 +56,19 @@ struct Graph {
     edges[end].push_back(start);
   }
 
-  void PrintGraph() const {
-    for (size_t node = 0; node < edges.size(); ++node) {
-      if (not edges[node].empty()) {
-        std::cout << Unhash(node) << ": ";
+  // void PrintGraph() const {
+  //   for (size_t node = 0; node < edges.size(); ++node) {
+  //     if (not edges[node].empty()) {
+  //       std::cout << Unhash(node) << ": ";
 
-        for (const uint16_t other_node : edges[node]) {
-          std::cout << Unhash(other_node) << ' ';
-        }
+  //       for (const uint16_t other_node : edges[node]) {
+  //         std::cout << Unhash(other_node) << ' ';
+  //       }
 
-        std::cout << '\n';
-      }
-    }
-  }
+  //       std::cout << '\n';
+  //     }
+  //   }
+  // }
 
   std::array<std::vector<uint16_t>, edge_count> edges;
 };
@@ -131,36 +131,14 @@ struct DFS {
   std::vector<uint16_t> current_group;
 };
 
-int main(const int argc, const char* const* argv) {
-  int ITERATIONS = 1;
-  if (argc == 2) {
-    ITERATIONS = std::stoi(argv[1]);
-  }
+}  // namespace day23b
 
-  const std::string input = my::ReadWholeFile("data/23.txt");
+template <>
+std::string Solve<2024, 23, 'B'>(std::stringstream input) {
+  day23b::Graph<26 * 26> graph(input.str());
 
-  my::Timer timer;
+  day23b::DFS dfs(graph);
+  dfs.Traverse();
 
-  for (int _ = 0; _ != ITERATIONS; ++_) {
-    Graph<26 * 26> graph(input);
-
-    DFS dfs(graph);
-    dfs.Traverse();
-
-    const std::string answer = dfs.TranslateBiggestClique();
-
-    if (answer != "bd,bu,dv,gl,qc,rn,so,tm,wf,yl,ys,ze,zr") {
-      std::cerr << "Expect: bd,bu,dv,gl,qc,rn,so,tm,wf,yl,ys,ze,zr\n";
-      std::cerr << "BAD ANSWER!!!\n";
-      return 1;
-    }
-  }
-
-  // std::cout << "Answer: " << answer << '\n';
-
-  const double elapsed_time = timer.ElapsedTime() / ITERATIONS;
-
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e6 << " us\n";
-
-  return 0;
+  return dfs.TranslateBiggestClique();
 }

@@ -1,14 +1,13 @@
+#include <array>
 #include <climits>
 #include <cstdint>
 #include <cstdio>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
-#include "utility.hpp"
+#include "solution.hpp"
+
+namespace day20a {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -92,31 +91,31 @@ struct Map {
     visits[y * size_x + x] = INT_MAX;
   }
 
-  void Print() const {
-    for (int y = 0; y < size_y; ++y) {
-      for (int x = 0; x < size_x; ++x) {
-        std::cout << at(y, x);
-      }
-      std::cout << '\n';
-    }
-  }
+  // void Print() const {
+  //   for (int y = 0; y < size_y; ++y) {
+  //     for (int x = 0; x < size_x; ++x) {
+  //       std::cout << at(y, x);
+  //     }
+  //     std::cout << '\n';
+  //   }
+  // }
 
-  void PrintVisits() const {
-    for (int y = 0; y < size_y; ++y) {
-      for (int x = 0; x < size_x; ++x) {
-        if (at(y, x) == '#') {
-          std::cout << std::setw(4) << '#' << ' ';
-        } else {
-          if (visited(y, x) == INT_MAX) {
-            std::cout << std::setw(4) << "  ERR";
-          } else {
-            std::cout << std::setw(4) << visited(y, x) << ' ';
-          }
-        }
-      }
-      std::cout << '\n';
-    }
-  }
+  // void PrintVisits() const {
+  //   for (int y = 0; y < size_y; ++y) {
+  //     for (int x = 0; x < size_x; ++x) {
+  //       if (at(y, x) == '#') {
+  //         std::cout << std::setw(4) << '#' << ' ';
+  //       } else {
+  //         if (visited(y, x) == INT_MAX) {
+  //           std::cout << std::setw(4) << "  ERR";
+  //         } else {
+  //           std::cout << std::setw(4) << visited(y, x) << ' ';
+  //         }
+  //       }
+  //     }
+  //     std::cout << '\n';
+  //   }
+  // }
 
   int size_y;
   int size_x;
@@ -173,20 +172,17 @@ std::pair<int, int> FindCell(const Map &map, const char c) {
   return {0, 0};
 }
 
-int main() {
-  std::ifstream fin("data/20.txt");
+}  // namespace day20a
 
-  uint64_t points = 0;
-
-  my::Timer timer;
-
+template <>
+std::string Solve<2024, 20, 'A'>(std::stringstream input) {
   std::vector<std::string> lines;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  Map map(lines);
+  day20a::Map map(lines);
 
   const auto [start_y, start_x] = FindCell(map, 'S');
   const auto [end_y, end_x] = FindCell(map, 'E');
@@ -197,24 +193,24 @@ int main() {
   int original_time = 0;
 
   {
-    Map new_map(map);
+    day20a::Map new_map(map);
 
     DFS(new_map, start_y, start_x, 0);
 
     original_time = new_map.visited(end_y, end_x);
   }
 
-  std::cout << "Original time: " << original_time << '\n';
   const int threshold = 100;
+  uint64_t points = 0;
 
   for (int y = 0; y < map.size_y; ++y) {
     for (int x = 0; x < map.size_x; ++x) {
-      for (int i = 0; i < dirs.size(); ++i) {
-        const int new_y = y + dirs[i].first;
-        const int new_x = x + dirs[i].second;
+      for (int i = 0; i < day20a::dirs.size(); ++i) {
+        const int new_y = y + day20a::dirs[i].first;
+        const int new_x = x + day20a::dirs[i].second;
 
         if (map.is_inside(new_y, new_x) && (map.at(y, x) == '#' && map.at(new_y, new_x) == '.')) {
-          Map new_map(map);
+          day20a::Map new_map(map);
 
           new_map.at(y, x) = '1';
           new_map.at(new_y, new_x) = '2';
@@ -224,19 +220,11 @@ int main() {
           const int time = new_map.visited(end_y, end_x);
           if (time <= original_time - threshold) {
             ++points;
-
-            // new_map.Print();
-            // new_map.PrintVisits();
-            // std::cout << time << '\n';
-            // std::getc(stdin);
           }
         }
       }
     }
   }
 
-  const double elapsed_time = timer.ElapsedTime();
-
-  std::cout << points << '\n';
-  std::cout << std::fixed << std::setprecision(3) << elapsed_time * 1e3 << " ms\n";
+  return std::to_string(points);
 }

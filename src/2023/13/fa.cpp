@@ -1,13 +1,16 @@
 #include <array>
 #include <cstdint>
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "solution.hpp"
+
+namespace day13a {
+
 template <typename Functor>
-void split(std::vector<int>& res, const std::string_view s, const char delimiter, const Functor& func) {
+void split(std::vector<int> &res, const std::string_view s, const char delimiter,
+           const Functor &func) {
   size_t pos_start = 0;
 
   res.resize(0);
@@ -26,9 +29,10 @@ void split(std::vector<int>& res, const std::string_view s, const char delimiter
   }
 }
 
-int main() {
-  std::ifstream fin("data/day13.in");
+}  // namespace day13a
 
+template <>
+std::string Solve<2023, 13, 'A'>(std::stringstream input) {
   int ans = 0;
 
   constexpr std::array<char, 2> masked_char = {'.', '#'};
@@ -36,7 +40,7 @@ int main() {
   std::vector<int> areas;
   std::vector<int> local_areas;
 
-  for (std::string line; std::getline(fin, line);) {
+  for (std::string line; std::getline(input, line);) {
     indices.resize(0);
     areas.resize(0);
 
@@ -48,8 +52,10 @@ int main() {
 
     const size_t space_index = line.find(' ') + 1;
 
-    split(areas, std::string_view(line.c_str() + space_index), ',',
-          [](const std::string_view str) { return std::atoi(str.data()); });
+    day13a::split(areas, std::string_view(line.c_str() + space_index), ',',
+                  [](const std::string_view str) {
+                    return std::atoi(str.data());
+                  });
 
     const uint64_t power = 1 << indices.size();
 
@@ -58,8 +64,10 @@ int main() {
         line[indices[i]] = masked_char[(mask >> i) & 1];
       }
 
-      split(local_areas, std::string_view(line.c_str(), space_index - 1), '.',
-            [](const std::string_view str) -> int { return str.size(); });
+      day13a::split(local_areas, std::string_view(line.c_str(), space_index - 1), '.',
+                    [](const std::string_view str) -> int {
+                      return str.size();
+                    });
 
       bool is_valid = false;
 
@@ -81,7 +89,5 @@ int main() {
     }
   }
 
-  std::cout << "Answer: " << ans << '\n';
-
-  return 0;
+  return std::to_string(ans);
 }

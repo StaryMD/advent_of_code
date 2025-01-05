@@ -1,8 +1,10 @@
 #include <cctype>
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
+
+#include "solution.hpp"
+
+namespace day3b {
 
 struct number_t {
   number_t(const int y_, const int x_, const int val) : y(y_), x(x_), value(val) {
@@ -72,16 +74,17 @@ std::vector<std::vector<int>> ExtractStarMap(const std::vector<std::string> &wor
   return starmap;
 }
 
-int main() {
-  std::ifstream fin("data/day3.in");
+}  // namespace day3b
 
+template <>
+std::string Solve<2023, 3, 'B'>(std::stringstream input) {
   std::vector<std::string> world;
 
-  for (std::string str; std::getline(fin, str);) {
+  for (std::string str; std::getline(input, str);) {
     world.push_back(str);
   }
 
-  const std::vector<number_t> numbers = ExtractNumbers(world);
+  const std::vector<day3b::number_t> numbers = day3b::ExtractNumbers(world);
   const std::vector<std::vector<int>> starmap = ExtractStarMap(world, numbers);
 
   int64_t sum = 0;
@@ -92,7 +95,5 @@ int main() {
     }
   }
 
-  std::cout << sum << '\n';
-
-  return 0;
+  return std::to_string(sum);
 }

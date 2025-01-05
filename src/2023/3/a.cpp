@@ -1,22 +1,16 @@
 #include <cctype>
-#include <exception>
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
 
-bool IsSymbol(const char ch) {
-  return ch != '.' && not std::isdigit(ch);
-}
+#include "solution.hpp"
 
-int main() try {
-  std::ifstream fin("data/day3.in");
-
+template <>
+std::string Solve<2023, 3, 'A'>(std::stringstream input) {
   int ans = 0;
 
   std::vector<std::string> world;
 
-  for (std::string str; std::getline(fin, str);) {
+  for (std::string str; std::getline(input, str);) {
     world.push_back(str + '.');
   }
 
@@ -40,14 +34,13 @@ int main() try {
 
         for (int x = top_left_x; x <= bottom_right_x; ++x) {
           for (int y = top_left_y; y <= bottom_right_y; ++y) {
-            if (IsSymbol(world[y][x])) {
+            if (world[y][x] != '.' && not std::isdigit(world[y][x])) {
               contains_symbol = true;
             }
           }
         }
 
         if (contains_symbol && len > 0) {
-          std::cout << i << ' ' << j << ' ' << len << '\n';
           const std::string number_str = world[i].substr(j - len, len);
           const int number = std::stoi(number_str);
 
@@ -59,10 +52,5 @@ int main() try {
     }
   }
 
-  std::cout << "Answer: " << ans << '\n';
-
-  return 0;
-} catch (const std::exception& excp) {
-
-  std::cout << "C++ standard exception: " << excp.what() << '\n';
+  return std::to_string(ans);
 }
