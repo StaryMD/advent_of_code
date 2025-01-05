@@ -31,17 +31,21 @@ def Main():
         [
             str(f)
             for f in SOURCE_FILES_DIR.rglob("*.cpp")
-            if re_search("([0-9]+)/([0-9]+)/([ab])\.cpp", str(f))
+            if re_search("([0-9]+)/([0-9]+)/((a|b|both))\.cpp", str(f))
         ]
     )
 
     solutions = defaultdict(lambda: defaultdict(list))
 
     for solution_file in solution_files:
-        match = re_findall("([0-9]+)/([0-9]+)/([ab])\.cpp", solution_file)
+        match = re_findall("([0-9]+)/([0-9]+)/((a|b|both))\.cpp", solution_file)
         year, day, part = int(match[0][0]), int(match[0][1]), match[0][2].upper()
 
-        solutions[year][day].append(part)
+        if part == "BOTH":
+            solutions[year][day].append("A")
+            solutions[year][day].append("B")
+        else:
+            solutions[year][day].append(part)
 
     if not solutions:
         return
