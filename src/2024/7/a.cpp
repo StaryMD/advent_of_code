@@ -14,31 +14,45 @@ std::string Solve<2024, 7, 'A'>(std::stringstream input) {
   for (std::string line; std::getline(input, line);) {
     std::stringstream sline(line);
 
+    std::vector<uint64_t> nums;
+
     uint64_t test_value;
     char temp;
-    std::vector<uint64_t> nums;
     sline >> test_value;
     sline >> temp;
     for (uint64_t a; sline >> a;) {
       nums.push_back(a);
     }
 
-    const uint64_t n = (1 << (nums.size() - 1));
+    struct State {
+      uint64_t curr;
+      int index;
+    };
 
-    for (uint64_t i = 0; i < n; ++i) {
-      uint64_t sum = nums[0];
+    std::vector<State> states;
+    states.emplace_back(nums[0], 1);
 
-      for (size_t j = 1; j < nums.size(); ++j) {
-        if (i & (1 << (j - 1))) {
-          sum += nums[j];
-        } else {
-          sum *= nums[j];
+    while (not states.empty()) {
+      const auto [curr, index] = states.back();
+      states.pop_back();
+
+      if (index == nums.size()) {
+        if (curr == test_value) {
+          points += test_value;
+          break;
         }
+        continue;
       }
 
-      if (test_value == sum) {
-        points += test_value;
-        break;
+      if (curr > test_value) {
+        continue;
+      }
+
+      if (curr + nums[index]) {
+        states.emplace_back(curr + nums[index], index + 1);
+      }
+      if (curr * nums[index]) {
+        states.emplace_back(curr * nums[index], index + 1);
       }
     }
   }

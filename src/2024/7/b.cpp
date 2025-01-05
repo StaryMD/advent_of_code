@@ -14,9 +14,10 @@ std::string Solve<2024, 7, 'B'>(std::stringstream input) {
   for (std::string line; std::getline(input, line);) {
     std::stringstream sline(line);
 
+    std::vector<uint64_t> nums;
+
     uint64_t test_value;
     char temp;
-    std::vector<uint64_t> nums;
     sline >> test_value;
     sline >> temp;
     for (uint64_t a; sline >> a;) {
@@ -24,33 +25,43 @@ std::string Solve<2024, 7, 'B'>(std::stringstream input) {
     }
 
     std::vector<uint64_t> len(nums.size());
+
     for (size_t i = 0; i < len.size(); ++i) {
       len[i] = my::Pow<uint64_t>(10, std::to_string(nums[i]).size());
     }
 
-    const uint64_t n = my::Pow<uint64_t>(3, nums.size() - 1);
-    for (uint64_t i = 0; i < n; ++i) {
-      uint64_t sum = nums[0];
-      uint64_t pow3 = 1;
+    struct State {
+      uint64_t curr;
+      int index;
+    };
 
-      for (size_t j = 1; j < nums.size(); ++j) {
-        switch ((i / pow3) % 3) {
-          case 0:
-            sum += nums[j];
-            break;
-          case 1:
-            sum *= nums[j];
-            break;
-          case 2:
-            sum = sum * len[j] + nums[j];
-            break;
+    std::vector<State> states;
+    states.emplace_back(nums[0], 1);
+
+    while (not states.empty()) {
+      const auto [curr, index] = states.back();
+      states.pop_back();
+
+      if (index == nums.size()) {
+        if (curr == test_value) {
+          points += test_value;
+          break;
         }
-        pow3 *= 3;
+        continue;
       }
 
-      if (test_value == sum) {
-        points += test_value;
-        break;
+      if (curr > test_value) {
+        continue;
+      }
+
+      if (curr + nums[index]) {
+        states.emplace_back(curr + nums[index], index + 1);
+      }
+      if (curr * nums[index]) {
+        states.emplace_back(curr * nums[index], index + 1);
+      }
+      if (curr * len[index] + nums[index]) {
+        states.emplace_back(curr * len[index] + nums[index], index + 1);
       }
     }
   }

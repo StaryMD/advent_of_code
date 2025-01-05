@@ -7,7 +7,7 @@
 
 #include "solution.hpp"
 
-namespace day23b {
+namespace day20 {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -79,28 +79,6 @@ struct Map {
     visits[y * size_x + x] = INT_MAX;
   }
 
-  // void Print() const {
-  //   for (int y = 0; y < size_y; ++y) {
-  //     for (int x = 0; x < size_x; ++x) {
-  //       std::cout << at(y, x);
-  //     }
-  //     std::cout << '\n';
-  //   }
-  // }
-
-  // void PrintVisits() const {
-  //   for (int y = 0; y < size_y; ++y) {
-  //     for (int x = 0; x < size_x; ++x) {
-  //       if (visited(y, x) == INT_MAX) {
-  //         std::cout << std::left << std::setw(5) << at(y, x);
-  //       } else {
-  //         std::cout << std::left << std::setw(5) << visited(y, x);
-  //       }
-  //     }
-  //     std::cout << '\n';
-  //   }
-  // }
-
   int size_y;
   int size_x;
 
@@ -123,12 +101,8 @@ void DFS(Map &map, const int y, const int x, int dist) {
   }
 }
 
-}  // namespace day23b
-
-template <>
-std::string Solve<2024, 20, 'B'>(std::stringstream input) {
+std::string SolveHelper(std::stringstream &input, const int cheat_max_dist) {
   constexpr int threshold = 100;
-  constexpr int cheat_max_dist = 20;
 
   std::vector<std::string> lines;
 
@@ -136,8 +110,8 @@ std::string Solve<2024, 20, 'B'>(std::stringstream input) {
     lines.push_back(line);
   }
 
-  day23b::Map map(lines);
-  day23b::Map back_map(map);
+  Map map(lines);
+  Map back_map(map);
 
   int start_y = 0;
   int start_x = 0;
@@ -167,8 +141,8 @@ std::string Solve<2024, 20, 'B'>(std::stringstream input) {
   for (int path_y = end_y, path_x = end_x; path_y != start_y || path_x != start_x;) {
 #pragma unroll
     for (int i = 0; i < 4; ++i) {
-      const int new_y = path_y + day23b::dirs[i].first;
-      const int new_x = path_x + day23b::dirs[i].second;
+      const int new_y = path_y + dirs[i].first;
+      const int new_x = path_x + dirs[i].second;
 
       if (map.visited(new_y, new_x) < map.visited(path_y, path_x)) {
         path_y = new_y;
@@ -204,4 +178,16 @@ std::string Solve<2024, 20, 'B'>(std::stringstream input) {
   }
 
   return std::to_string(points);
+}
+
+}  // namespace day20
+
+template <>
+std::string Solve<2024, 20, 'A'>(std::stringstream input) {
+  return day20::SolveHelper(input, 2);
+}
+
+template <>
+std::string Solve<2024, 20, 'B'>(std::stringstream input) {
+  return day20::SolveHelper(input, 20);
 }

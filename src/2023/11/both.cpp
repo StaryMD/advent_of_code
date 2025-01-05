@@ -1,4 +1,3 @@
-#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <sstream>
