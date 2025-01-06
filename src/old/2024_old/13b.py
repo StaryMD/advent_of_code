@@ -19,8 +19,6 @@ def GetPoints(prize):
     p_x = int(re.findall(regex_x, prize[2])[0]) + 10000000000000
     p_y = int(re.findall(regex_y, prize[2])[0]) + 10000000000000
 
-    best = None
-
     x_sus = b_x * p_y - b_y * p_x
     x_jos = b_x * a_y - b_y * a_x
 
@@ -31,12 +29,9 @@ def GetPoints(prize):
         y2 = (p_y - x * a_y) // b_y
 
         if y1 == y2 and x * a_x + y1 * b_x == p_x and x * a_y + y1 * b_y == p_y:
-            if not best:
-                best = x * 3 + y1
-            else:
-                best = min(best, x * 3 + y1)
+            return x * 3 + y1
 
-    return best
+    return 0
 
 
 def GetAns(text):
@@ -45,9 +40,7 @@ def GetAns(text):
     for prize in chunker(text, 4):
         prize = prize[:3]
 
-        l_points = GetPoints(prize)
-        if l_points:
-            points += l_points
+        points += GetPoints(prize)
 
     return points
 

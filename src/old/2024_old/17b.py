@@ -35,7 +35,7 @@ def PrintProgram(program):
                 pass
 
 
-def GetNextDigit(a, b, c):
+def GetNextDigit(a):
     b = a % 8
     b = b ^ 5
     c = a >> b
@@ -43,24 +43,24 @@ def GetNextDigit(a, b, c):
     a = a >> 3
     b = b ^ c
 
-    return b, c
+    return b
 
 
 anses = []
 
 
-def Solve(program, i, reg_a, reg_b, reg_c):
+def Solve(program, i, reg_a):
     if i == len(program):
         anses.append(reg_a)
     else:
         wanted = program[len(program) - i - 1]
 
         for a in range(0, 8):
-            new_b, new_c = GetNextDigit(reg_a * 8 + a, reg_b, reg_c)
+            new_b = GetNextDigit(reg_a * 8 + a)
             digit = new_b % 8
 
             if digit == wanted:
-                Solve(program, i + 1, reg_a * 8 + a, new_b, new_c)
+                Solve(program, i + 1, reg_a * 8 + a)
 
 
 def GetAns(text):
@@ -69,7 +69,7 @@ def GetAns(text):
 
     # PrintProgram(program)
 
-    Solve(program, 0, 0, 0, 0)
+    Solve(program, 0, 0)
 
     return min(anses)
 

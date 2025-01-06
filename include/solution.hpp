@@ -6,4 +6,4 @@
 std::string GetInput(int year, int day);
 
 template <int year, int day, char part>
-std::string Solve(std::stringstream input);
+std::string Solve(std::stringstream);

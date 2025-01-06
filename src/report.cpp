@@ -42,8 +42,10 @@ int main(const int argc, const char* const* const argv) {
     std::cout << std::format("Will do only part {}\n", wanted_part);
   }
 
-  double total_elapsed_time_ms = 0;
+  double total_useful_time_ms = 0;
   int star_counter = 0;
+
+  const my::Timer total_timer;
 
   for (const auto &[year, days] : GetSolutionMap()) {
     if (wanted_year == 0 || year == wanted_year) {
@@ -63,7 +65,7 @@ int main(const int argc, const char* const* const argv) {
               const std::string ans = solve(std::stringstream(input));
 
               const double elapsed_time_ms = timer.ElapsedTime() * 1e3;
-              total_elapsed_time_ms += elapsed_time_ms;
+              total_useful_time_ms += elapsed_time_ms;
 
               std::cout << std::format("{} {:2} {} in {:8.3f}ms for {}\n", year, day, part,
                                        elapsed_time_ms / iterations, ans);
@@ -75,9 +77,14 @@ int main(const int argc, const char* const* const argv) {
     }
   }
 
+  const double total_elapsed_time_ms = total_timer.ElapsedTime() * 1e3;
+
   std::cout << '\n';
   std::cout << std::format("Total elapsed time: {:0.3f}ms\n", total_elapsed_time_ms);
-  std::cout << std::format("Useful time: {:0.3f}ms\n", total_elapsed_time_ms / iterations);
+  if (iterations > 1) {
+    std::cout << std::format("Total useful time: {:0.3f}ms\n", total_useful_time_ms);
+  }
+  std::cout << std::format("Average time: {:0.3f}ms\n", total_useful_time_ms / iterations);
   std::cout << std::format("Stars: {}\n", star_counter);
 
   return 0;
