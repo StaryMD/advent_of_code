@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
@@ -28,66 +30,41 @@ uint32_t Next(uint32_t n) {
 
 template <>
 std::string Solve<2024, 22, 'B'>(std::stringstream input) {
-  std::vector<std::unordered_map<int32_t, int8_t>> prices;
+  constexpr int32_t kSize = 19 * 19 * 19 * 19;
+
+  std::array<uint8_t, 2001> nums;
+  std::array<uint8_t, 2001> diffs;
+
+  std::array<int16_t, kSize> price_map;
+  std::ranges::fill(price_map, 0);
+
+  std::vector<bool> local_prices(kSize);
 
   for (uint32_t n; input >> n;) {
-    std::vector<int8_t> nums = {int8_t(n % 10)};
+    nums[0] = n % 10;
 
-    for (int i = 0; i < 2000; ++i) {
+    for (int i = 1; i <= 2000; ++i) {
       n = day22b_2024::Next(n);
-      nums.push_back(n % 10);
+      nums[i] = n % 10;
+      diffs[i] = 9 + nums[i] - nums[i - 1];
     }
 
-    union Stuff {
-      int8_t diff[4];
-      int32_t d;
-    };
-
-    std::unordered_map<int32_t, int8_t> price;
+    std::fill(local_prices.begin(), local_prices.end(), false);
 
     for (int i = 1; i < nums.size() - 3; ++i) {
-      const Stuff stuff = {
-          .diff =
-              {
-                  int8_t(nums[i + 0] - nums[i - 1]),
-                  int8_t(nums[i + 1] - nums[i + 0]),
-                  int8_t(nums[i + 2] - nums[i + 1]),
-                  int8_t(nums[i + 3] - nums[i + 2]),
-              },
-      };
+      const int32_t diff = ((diffs[i] * 19 + diffs[i + 1]) * 19 + diffs[i + 2]) * 19 + diffs[i + 3];
 
-      if (not price.contains(stuff.d)) {
-        price[stuff.d] = nums[i + 3];
+      if (not local_prices[diff]) {
+        price_map[diff] += nums[i + 3];
+        local_prices[diff] = true;
       }
-    }
-
-    prices.push_back(price);
-  }
-
-  const auto GetValue = [&](const int32_t diff) {
-    int32_t sum = 0;
-
-    for (const auto &price : prices) {
-      if (price.contains(diff)) {
-        sum += price.at(diff);
-      }
-    }
-
-    return sum;
-  };
-
-  std::unordered_set<int32_t> diffs_to_ckeck;
-
-  for (const auto &price_map : prices) {
-    for (const auto [diff, price] : price_map) {
-      diffs_to_ckeck.insert(diff);
     }
   }
 
-  int32_t best_price = 0;
+  int16_t best_price = 0;
 
-  for (const int32_t diff : diffs_to_ckeck) {
-    best_price = std::max(best_price, GetValue(diff));
+  for (const auto price : price_map) {
+    best_price = std::max(best_price, price);
   }
 
   return std::to_string(best_price);
