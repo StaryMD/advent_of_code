@@ -13,8 +13,9 @@ uint64_t SolveHelper(std::unordered_map<std::string_view, uint64_t> &cache,
     return 1;
   }
 
-  if (cache.contains(pattern)) {
-    return cache.at(pattern);
+  uint64_t &cached_value = cache[pattern];
+  if (cached_value != 0) {
+    return cached_value;
   }
 
   uint64_t curr_points = 0;
@@ -25,7 +26,7 @@ uint64_t SolveHelper(std::unordered_map<std::string_view, uint64_t> &cache,
     }
   }
 
-  cache[pattern] = curr_points;
+  cached_value = curr_points;
 
   return curr_points;
 }

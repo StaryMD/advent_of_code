@@ -89,7 +89,7 @@ def GetAllPaths(start, end):
 
         paths = []
 
-        def BFS(coord, path):
+        def DFS(coord, path):
             if numpad[coord[0]][coord[1]] == "#":
                 return
             if coord == end_coord:
@@ -97,9 +97,9 @@ def GetAllPaths(start, end):
                 return
 
             for dir in allowed_dirs:
-                BFS((coord[0] + dir[0], coord[1] + dir[1]), path + dir[2])
+                DFS((coord[0] + dir[0], coord[1] + dir[1]), path + dir[2])
 
-        BFS(start_coord, "")
+        DFS(start_coord, "")
 
         for path in paths:
             yield path + "A"
@@ -129,7 +129,7 @@ def GetAns(codes):
     points = 0
 
     for code in codes:
-        points += int(code[:3]) * GetCost(code, 900)
+        points += int(code[:3]) * GetCost(code, 26)
 
     return points
 

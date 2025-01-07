@@ -9,9 +9,6 @@ def GetAns(lines: list[str]):
     for line in lines[blank + 1 :]:
         op = line.replace("-> ", "").split(" ")
 
-        if op[0] > op[2]:
-            op[0], op[2] = op[2], op[0]
-
         ops.append(tuple(op))
 
     lookup = set()

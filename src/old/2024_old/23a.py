@@ -11,39 +11,17 @@ def GetAns(connections):
         graph[left].append(right)
         graph[right].append(left)
 
-    for left in graph:
-        print(f"{left}: {graph[left]}")
-
     groups = set()
 
-    def DFS(group):
-        if len(group) == 3:
-            a, b, c = group
+    for node1 in graph:
+        if node1[0] == "t":
+            for node2 in graph[node1]:
+                for node3 in graph[node2]:
+                    if node3 in graph[node1]:
+                        group = sorted((node1, node2, node3))
+                        groups.add((group[0], group[1], group[2]))
 
-            if a[0] == "t" or b[0] == "t" or c[0] == "t":
-                group = sorted(group)
-                groups.add((group[0], group[1], group[2]))
-            return
-
-        for other in graph[group[-1]]:
-            DFS(group + [other])
-
-    for node in graph:
-        DFS([node])
-
-    groups2 = set()
-
-    for group in groups:
-        a, b, c = group
-
-        if a in graph[b] and a in graph[c] and b in graph[c]:
-            groups2.add(group)
-
-    # for group in groups2:
-    #     print(",".join(group))
-    # print("fuck ", len(groups2))
-
-    return len(groups2)
+    return len(groups)
 
 
 test_input = [
