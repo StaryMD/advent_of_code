@@ -1,2 +1,7 @@
+.cache
+.data
+.venv
+.vscode
+build
 data
 a.out

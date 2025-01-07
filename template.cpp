@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
+#include "utility.hpp"
 
 int main() {
   std::ifstream fin("data/8.txt");
