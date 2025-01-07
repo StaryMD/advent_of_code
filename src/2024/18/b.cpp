@@ -11,6 +11,10 @@
 
 namespace day18b {
 
+struct Point {
+  int y, x;
+};
+
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
     std::pair{0, 1},
@@ -25,11 +29,9 @@ struct Map {
 
     map.resize(size_y * size_x);
     visits.resize(size_y * size_x);
-    colors.resize(size_y * size_x);
 
     std::fill(map.begin(), map.end(), '.');
     std::fill(visits.begin(), visits.end(), INT_MAX);
-    std::fill(colors.begin(), colors.end(), 0);
   }
 
   Map(const std::vector<std::string> &lines) {
@@ -38,14 +40,12 @@ struct Map {
 
     map.resize(size_y * size_x);
     visits.resize(size_y * size_x);
-    colors.resize(size_y * size_x);
 
     for (size_t i = 0; i < lines.size(); ++i) {
       std::copy(lines[i].data(), lines[i].data() + size_x, map.data() + i * size_x);
     }
 
     std::fill(visits.begin(), visits.end(), INT_MAX);
-    std::fill(colors.begin(), colors.end(), 0);
   }
 
   void reset_visits() {
@@ -76,14 +76,6 @@ struct Map {
     visits[y * size_x + x] = score;
   }
 
-  int get_color(const int y, const int x) const {
-    return colors[y * size_x + x];
-  }
-
-  void color(const int y, const int x, const int l) {
-    colors[y * size_x + x] = l;
-  }
-
   void unvisit(const int y, const int x) {
     visits[y * size_x + x] = INT_MAX;
   }
@@ -93,16 +85,15 @@ struct Map {
 
   std::vector<char> map;
   std::vector<int> visits;
-  std::vector<int> colors;
 };
 
-void DFS(Map &map, const int goal_y, const int goal_x, const int y, const int x, int dist) {
+int Dist(Map &map, const int goal_y, const int goal_x, const int y, const int x) {
   struct State {
     int y, x, dist;
   };
 
   std::deque<State> states;
-  states.emplace_back(y, x, dist);
+  states.emplace_back(y, x, 0);
   map.visit(y, x, 0);
 
   int counter = 0;
@@ -124,44 +115,55 @@ void DFS(Map &map, const int goal_y, const int goal_x, const int y, const int x,
       }
     }
   }
+
+  return map.visited(goal_y, goal_x);
 }
 
 }  // namespace day18b
 
 template <>
 std::string Solve<2024, 18, 'B'>(std::stringstream input) {
-  std::vector<std::string> lines;
+  using namespace day18b;
 
-  for (std::string line; std::getline(input, line);) {
-    lines.push_back(line);
-  }
+  std::vector<Point> points;
 
-  day18b::Map map(71, 71);
-
-  for (int i = 0; i < 1024; ++i) {
-    std::stringstream ss(lines[i]);
+  {
     int x, y;
-    char t;
-    ss >> x >> t >> y;
-
-    map.at(y, x) = '#';
-  }
-
-  for (int i = 1024; i < lines.size(); ++i) {
-    std::stringstream ss(lines[i]);
-    int x, y;
-    char t;
-    ss >> x >> t >> y;
-
-    map.at(y, x) = '#';
-
-    map.reset_visits();
-    DFS(map, map.size_y - 1, map.size_x - 1, 0, 0, 0);
-
-    if (map.visited(map.size_y - 1, map.size_x - 1) == INT_MAX) {
-      return lines[i];
+    char c;
+    while (input >> x >> c >> y) {
+      points.emplace_back(y, x);
     }
   }
 
-  return "n/a";
+  Map map(71, 71);
+
+  for (int i = 0; i < 1024; ++i) {
+    map.at(points[i].y, points[i].x) = '#';
+  }
+
+  int left = 1024;
+  int right = points.size();
+
+  while (left < right) {
+    const int mid = (left + right) / 2;
+
+    Map new_map(map);
+    for (int i = 1024; i <= mid; ++i) {
+      new_map.at(points[i].y, points[i].x) = '#';
+    }
+
+    new_map.reset_visits();
+    const int dist_till_end = Dist(new_map, new_map.size_y - 1, new_map.size_x - 1, 0, 0);
+
+    if (dist_till_end == INT_MAX) {
+      right = mid;
+    } else {
+      for (int i = left; i <= mid; ++i) {
+        map.at(points[i].y, points[i].x) = '#';
+      }
+      left = mid + 1;
+    }
+  }
+
+  return std::to_string(points[right].x) + ',' + std::to_string(points[right].y);
 }
