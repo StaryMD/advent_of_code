@@ -2,6 +2,7 @@
 #include <array>
 #include <climits>
 #include <cstdio>
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -22,17 +23,6 @@ struct Map {
   Map &operator=(const Map &) = default;
   Map &operator=(Map &&) = default;
 
-  Map(const int y, const int x) {
-    size_y = y;
-    size_x = x;
-
-    map.resize(size_y * size_x);
-    visits.resize(size_y * size_x);
-
-    std::fill(map.begin(), map.end(), '.');
-    std::fill(visits.begin(), visits.end(), INT_MAX);
-  }
-
   Map(const std::vector<std::string> &lines) {
     size_y = lines.size();
     size_x = lines[0].size();
@@ -49,10 +39,6 @@ struct Map {
 
   void reset_visits() {
     std::fill(visits.begin(), visits.end(), INT_MAX);
-  }
-
-  bool can_adv(const int y, const int x, const int new_y, const int new_x) const {
-    return is_inside(new_y, new_x) && (at(new_y, new_x) == at(y, x) + 1);
   }
 
   bool is_inside(const int y, const int x) const {
@@ -86,17 +72,30 @@ struct Map {
   std::vector<int> visits;
 };
 
-void DFS(Map &map, const int y, const int x, int dist) {
-  map.visit(y, x, dist);
-  ++dist;
+void DFS(Map &map, const int y, const int x) {
+  struct State {
+    int y, x, dist;
+  };
+
+  std::deque<State> states;
+  states.emplace_back(y, x, 0);
+
+  while (not states.empty()) {
+    const auto [y, x, dist] = states.front();
+    states.pop_front();
+
+    map.visit(y, x, dist);
+
+    const int new_dist = dist + 1;
 
 #pragma unroll
-  for (int i = 0; i < 4; ++i) {
-    const int new_y = y + dirs[i].first;
-    const int new_x = x + dirs[i].second;
+    for (int i = 0; i < 4; ++i) {
+      const int new_y = y + dirs[i].first;
+      const int new_x = x + dirs[i].second;
 
-    if ((dist < map.visited(new_y, new_x)) && map.at(new_y, new_x) != '#') {
-      DFS(map, new_y, new_x, dist);
+      if (new_dist < map.visited(new_y, new_x) && map.at(new_y, new_x) != '#') {
+        states.emplace_back(new_y, new_x, new_dist);
+      }
     }
   }
 }
@@ -133,8 +132,8 @@ std::string SolveHelper(std::stringstream &input, const int cheat_max_dist) {
   map.at(start_y, start_x) = '.';
   map.at(end_y, end_x) = '.';
 
-  DFS(map, start_y, start_x, 0);
-  DFS(back_map, end_y, end_x, 0);
+  DFS(map, start_y, start_x);
+  DFS(back_map, end_y, end_x);
 
   int points = 0;
 
@@ -156,21 +155,19 @@ std::string SolveHelper(std::stringstream &input, const int cheat_max_dist) {
       const int bot = std::min(map.size_y - 1, path_y + cheat_max_dist) + 1;
 
       for (int cheat_end_y = top; cheat_end_y != bot; ++cheat_end_y) {
-        const int left = std::max(1, path_x - cheat_max_dist);
-        const int right = std::min(map.size_x - 1, path_x + cheat_max_dist) + 1;
+        const int displacement = cheat_max_dist - std::abs(path_y - cheat_end_y);
+
+        const int left = std::max(1, path_x - displacement);
+        const int right = std::min(map.size_x - 1, path_x + displacement) + 1;
 
         for (int cheat_end_x = left; cheat_end_x != right; ++cheat_end_x) {
-          if (map.at(cheat_end_y, cheat_end_x) == '.') {
-            const int cheat_dist = std::abs(path_x - cheat_end_x) + std::abs(path_y - cheat_end_y);
+          const int cheat_dist = std::abs(path_x - cheat_end_x) + std::abs(path_y - cheat_end_y);
+          const int total_dist =
+              map.visited(path_y, path_x) + cheat_dist + back_map.visited(cheat_end_y, cheat_end_x);
 
-            if (cheat_dist <= cheat_max_dist) {
-              const int total_dist = map.visited(path_y, path_x) + cheat_dist +
-                                     back_map.visited(cheat_end_y, cheat_end_x);
-
-              if (total_dist <= map.visited(end_y, end_x) - threshold) {
-                points++;
-              }
-            }
+          if (map.at(cheat_end_y, cheat_end_x) == '.' &&
+              total_dist <= map.visited(end_y, end_x) - threshold) {
+            points++;
           }
         }
       }

@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "solution.hpp"
@@ -54,10 +52,8 @@ std::string Solve<2024, 22, 'B'>(std::stringstream input) {
     for (int i = 1; i < nums.size() - 3; ++i) {
       const int32_t diff = ((diffs[i] * 19 + diffs[i + 1]) * 19 + diffs[i + 2]) * 19 + diffs[i + 3];
 
-      if (not local_prices[diff]) {
-        price_map[diff] += nums[i + 3];
-        local_prices[diff] = true;
-      }
+      price_map[diff] += not local_prices[diff] * nums[i + 3];
+      local_prices[diff] = not local_prices[diff];
     }
   }
 
