@@ -85,12 +85,12 @@ std::string SolveHelper(std::stringstream &input, const int iterations) {
     int it;
   };
 
-  std::vector<std::unordered_map<uint64_t, uint64_t>> map(iterations);
+  std::vector<std::unordered_map<uint64_t, uint64_t>> cache(iterations);
 
   uint64_t points = 0;
 
   for (const uint64_t num : nums) {
-    points += GetLength(map, iterations, num, 0);
+    points += GetLength(cache, iterations, num, 0);
   }
 
   return std::to_string(points);

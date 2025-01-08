@@ -1,43 +1,34 @@
+#include <cctype>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "common.hpp"
 #include "solution.hpp"
 
 template <>
-std::string Solve<2024, 2, 'A'>(std::stringstream input) {
-  size_t points = 0;
+std::string Solve<2024, 2, 'A'>(std::stringstream input_stream) {
+  int points = 0;
+  std::vector<int> nums;
 
-  for (std::string line; std::getline(input, line);) {
-    std::vector<int32_t> nums;
-    std::stringstream sline(line);
+  int num = 0;
+  for (const char c : input_stream.str() + '\n') {
+    if (std::isdigit(c)) {
+      num = num * 10 + c - '0';
+    } else {
+      nums.push_back(num);
+      num = 0;
 
-    for (int a; sline >> a;) {
-      nums.push_back(a);
-    }
+      if (c == '\n') {
+        if (day2_2024::IsSequenceGood(nums)) {
+          ++points;
+        }
 
-    bool inc = true;
-    bool dec = true;
-    bool good = true;
-
-    for (int i = 1; i < nums.size(); ++i) {
-      const int abs_diff = std::abs(nums[i] - nums[i - 1]);
-
-      if (abs_diff < 1 || abs_diff > 3) {
-        good = false;
+        nums.clear();
       }
-
-      if (nums[i] > nums[i - 1]) {
-        dec = false;
-      }
-      if (nums[i] < nums[i - 1]) {
-        inc = false;
-      }
-    }
-    if ((inc || dec) && good) {
-      ++points;
     }
   }
 
