@@ -1,11 +1,11 @@
+#include <array>
 #include <cstdio>
 #include <string>
 #include <vector>
 
 #include "solution.hpp"
-#include "utility.hpp"
 
-namespace day10a {
+namespace day10a_2024 {
 
 const std::array<std::pair<int, int>, 4> dirs = {
     std::pair{-1, 0},
@@ -84,27 +84,24 @@ void CountTrailheadScore(Map &map, const int y, const int x, int* score) {
   }
 }
 
-}  // namespace day10a
+}  // namespace day10a_2024
 
 template <>
 std::string Solve<2024, 10, 'A'>(std::stringstream input) {
-  int points = 0;
-
   std::vector<std::string> lines;
 
   for (std::string line; std::getline(input, line);) {
     lines.push_back(line);
   }
 
-  my::Timer timer;
+  day10a_2024::Map map(lines);
 
-  day10a::Map map(lines);
-
+  int points = 0;
   for (int y = 0; y < map.size_y; ++y) {
     for (int x = 0; x < map.size_x; ++x) {
-      if (lines[y][x] == '0') {
+      if (map.at(y, x) == '0') {
         map.reset_visits();
-        day10a::CountTrailheadScore(map, y, x, &points);
+        day10a_2024::CountTrailheadScore(map, y, x, &points);
       }
     }
   }

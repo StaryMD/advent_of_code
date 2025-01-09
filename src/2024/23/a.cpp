@@ -37,7 +37,12 @@ std::string Solve<2024, 23, 'A'>(std::stringstream stream_input) {
         if (node0_edge_freq[node2]) {
           uint16_t nodes[] = {node0, node1, node2};
 
-          std::ranges::sort(nodes);
+          if (nodes[0] < nodes[1])
+            std::swap(nodes[0], nodes[1]);
+          if (nodes[1] < nodes[2])
+            std::swap(nodes[1], nodes[2]);
+          if (nodes[0] < nodes[1])
+            std::swap(nodes[0], nodes[1]);
 
           const uint32_t hash = ((nodes[0] * 26 * 26) + nodes[1]) * 26 * 26 + nodes[2];
           groups.insert(hash);

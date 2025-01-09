@@ -5,6 +5,22 @@
 #include "common.hpp"
 #include "solution.hpp"
 
+namespace day2b_2024 {
+
+bool IsSequenceGoodWeak(const std::vector<int> &nums) {
+  int bad = 0;
+
+  for (int i = 1; i < nums.size(); ++i) {
+    const int diff = std::abs(nums[i] - nums[i - 1]);
+
+    bad += diff == 0 || diff > 3;
+  }
+
+  return bad < 2;
+}
+
+}  // namespace day2b_2024
+
 template <>
 std::string Solve<2024, 2, 'B'>(std::stringstream input_stream) {
   int points = 0;
@@ -20,15 +36,18 @@ std::string Solve<2024, 2, 'B'>(std::stringstream input_stream) {
       num = 0;
 
       if (c == '\n') {
-        for (int d = 0; d < nums.size(); ++d) {
-          copy = nums;
-          copy.erase(copy.begin() + d);
+        if (day2b_2024::IsSequenceGoodWeak(nums)) {
+          for (int d = 0; d < nums.size(); ++d) {
+            copy = nums;
+            copy.erase(copy.begin() + d);
 
-          if (day2_2024::IsSequenceGood(copy)) {
-            ++points;
-            break;
+            if (day2_2024::IsSequenceGood(copy)) {
+              ++points;
+              break;
+            }
           }
         }
+
         nums.clear();
       }
     }

@@ -33,8 +33,7 @@ std::string Solve<2024, 22, 'B'>(std::stringstream input) {
   std::array<uint8_t, 2001> nums;
   std::array<uint8_t, 2001> diffs;
 
-  std::array<int16_t, kSize> price_map;
-  std::ranges::fill(price_map, 0);
+  std::array<int16_t, kSize> price_map = {0};
 
   std::vector<bool> local_prices(kSize);
 

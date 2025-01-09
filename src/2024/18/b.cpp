@@ -89,31 +89,37 @@ struct Map {
 
 int Dist(Map &map, const int goal_y, const int goal_x, const int y, const int x) {
   struct State {
-    int y, x, dist;
+    int y, x;
   };
 
-  std::deque<State> states;
-  states.emplace_back(y, x, 0);
+  std::vector<State> todo;
+  std::vector<State> backlog;
+
+  todo.emplace_back(y, x);
   map.visit(y, x, 0);
 
-  int counter = 0;
+  int dist = 0;
 
-  while (not states.empty()) {
-    const auto [y, x, dist] = states.front();
-    states.pop_front();
+  while (not todo.empty()) {
+    ++dist;
 
-    const int new_dist = dist + 1;
+    while (not todo.empty()) {
+      const auto [y, x] = todo.back();
+      todo.pop_back();
 
-    for (int i = 0; i < dirs.size(); ++i) {
-      const int new_y = y + dirs[i].first;
-      const int new_x = x + dirs[i].second;
+      for (int i = 0; i < dirs.size(); ++i) {
+        const int new_y = y + dirs[i].first;
+        const int new_x = x + dirs[i].second;
 
-      if ((new_dist < map.visited(new_y, new_x)) && map.at(new_y, new_x) != '#' &&
-          map.is_inside(new_y, new_x)) {
-        states.emplace_back(new_y, new_x, new_dist);
-        map.visit(new_y, new_x, new_dist);
+        if ((dist < map.visited(new_y, new_x)) && map.at(new_y, new_x) != '#' &&
+            map.is_inside(new_y, new_x)) {
+          backlog.emplace_back(new_y, new_x);
+          map.visit(new_y, new_x, dist);
+        }
       }
     }
+
+    std::swap(todo, backlog);
   }
 
   return map.visited(goal_y, goal_x);

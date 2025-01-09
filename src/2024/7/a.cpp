@@ -44,14 +44,10 @@ std::string Solve<2024, 7, 'A'>(std::stringstream input) {
         continue;
       }
 
-      if (curr > test_value) {
-        continue;
-      }
-
-      if (curr + nums[index]) {
+      if (curr + nums[index] <= test_value) {
         states.emplace_back(curr + nums[index], index + 1);
       }
-      if (curr * nums[index]) {
+      if (curr * nums[index] <= test_value) {
         states.emplace_back(curr * nums[index], index + 1);
       }
     }

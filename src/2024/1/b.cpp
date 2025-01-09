@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -10,8 +9,7 @@ std::string Solve<2024, 1, 'B'>(std::stringstream input_stream) {
   const std::string &input = input_stream.str();
 
   std::vector<int32_t> list1;
-  std::array<int32_t, 100'000> freq;
-  std::ranges::fill(freq, 0);
+  std::array<int32_t, 100'000> freq = {0};
 
   bool flag = true;
   int32_t num = 0;

@@ -118,8 +118,6 @@ std::string Solve<2024, 12, 'B'>(std::stringstream input) {
     lines.push_back(line);
   }
 
-  my::Timer timer;
-
   day12b::Map map(lines);
 
   for (int y = 0; y < map.size_y; ++y) {

@@ -11,11 +11,11 @@ inline bool IsSequenceGood(const std::vector<int> &nums) {
   bool good = true;
 
   for (int i = 1; i < nums.size() && (inc || dec) && good; ++i) {
-    const int abs_diff = std::abs(nums[i] - nums[i - 1]);
+    const int diff = nums[i] - nums[i - 1];
 
-    good &= abs_diff == 1 || abs_diff == 2 || abs_diff == 3;
-    dec &= nums[i] > nums[i - 1];
-    inc &= nums[i] < nums[i - 1];
+    good &= std::abs(diff) < 4;
+    dec &= diff > 0;
+    inc &= diff < 0;
   }
 
   return (inc || dec) && good;
