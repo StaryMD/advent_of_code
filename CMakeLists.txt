@@ -12,9 +12,6 @@ set(MY_CPP_VERSION
     20
     CACHE STRING "")
 
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 project(aoc)

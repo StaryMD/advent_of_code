@@ -1,7 +1,5 @@
 #include <array>
 #include <cstdint>
-#include <exception>
-#include <iostream>
 #include <limits>
 #include <string>
 #include <unordered_map>
@@ -15,7 +13,7 @@ namespace day21_2024 {
 struct Point {
   int y, x;
 
-  bool operator==(const Point &other) const {
+  constexpr bool operator==(const Point &other) const {
     return y == other.y && x == other.x;
   }
 };
@@ -69,36 +67,29 @@ std::vector<std::string> GetAllPaths(const char start, const char end) {
         paths.push_back(path.substr(0, path.size() - 1) + "<A");
       }
     } else {
-      const std::array<int, 2> diff = {
-          dirpad_coords.at(end).y - dirpad_coords.at(start).y,
-          dirpad_coords.at(end).x - dirpad_coords.at(start).x,
-      };
+      const int diff_y = dirpad_coords.at(end).y - dirpad_coords.at(start).y;
+      const int diff_x = dirpad_coords.at(end).x - dirpad_coords.at(start).x;
 
       std::string path;
 
-      if (diff[0] < 0) {
-        for (int i = 0; i < -diff[0]; ++i) {
+      if (diff_y < 0) {
+        for (int i = 0; i < -diff_y; ++i) {
           path += '^';
         }
-      } else if (diff[0] > 0) {
-        for (int i = 0; i < diff[0]; ++i) {
+      } else if (diff_y > 0) {
+        for (int i = 0; i < diff_y; ++i) {
           path += 'v';
         }
       }
 
-      if (diff[1] < 0) {
-        for (int i = 0; i < -diff[1]; ++i) {
+      if (diff_x < 0) {
+        for (int i = 0; i < -diff_x; ++i) {
           path += '<';
         }
-      } else if (diff[1] > 0) {
-        for (int i = 0; i < diff[1]; ++i) {
+      } else if (diff_x > 0) {
+        for (int i = 0; i < diff_x; ++i) {
           path += '>';
         }
-      }
-
-      if (path.size() > 2) {
-        std::cout << "fuck\n";
-        std::terminate();
       }
 
       paths.push_back(path + 'A');
@@ -114,23 +105,21 @@ std::vector<std::string> GetAllPaths(const char start, const char end) {
   const Point start_coord = numpad_coords.at(start);
   const Point end_coord = numpad_coords.at(end);
 
-  const std::array<int, 2> diff = {
-      end_coord.y - start_coord.y,
-      end_coord.x - start_coord.x,
-  };
+  const int diff_y = end_coord.y - start_coord.y;
+  const int diff_x = end_coord.x - start_coord.x;
 
   std::vector<std::pair<Point, char>> allowed_dirs;
 
-  if (diff[0] > 0) {
-    allowed_dirs.push_back({{1, 0}, 'v'});
-  } else if (diff[0] < 0) {
-    allowed_dirs.push_back({{-1, 0}, '^'});
+  if (diff_y > 0) {
+    allowed_dirs.emplace_back(Point(1, 0), 'v');
+  } else if (diff_y < 0) {
+    allowed_dirs.emplace_back(Point(-1, 0), '^');
   }
 
-  if (diff[1] > 0) {
-    allowed_dirs.push_back({{0, 1}, '>'});
-  } else if (diff[1] < 0) {
-    allowed_dirs.push_back({{0, -1}, '<'});
+  if (diff_x > 0) {
+    allowed_dirs.emplace_back(Point(0, 1), '>');
+  } else if (diff_x < 0) {
+    allowed_dirs.emplace_back(Point(0, -1), '<');
   }
 
   std::vector<std::string> paths;
